@@ -28,58 +28,6 @@ namespace RebarCreate
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                Model myModel = new Model();
-                ModelObjectEnumerator myEnum = new TSMUI.ModelObjectSelector().GetSelectedObjects();
-                while (myEnum.MoveNext())
-                {
-                    Beam myPart = myEnum.Current as Beam;
-                    if (myPart != null)
-                    {
-                        WorkPlaneHandler workPlane =
-                            myModel.GetWorkPlaneHandler();
-                        TransformationPlane currentPlane =
-                            workPlane.GetCurrentTransformationPlane();
-                        TransformationPlane localPlane =
-                            new TransformationPlane(myPart.GetCoordinateSystem());
-                        workPlane.SetCurrentTransformationPlane(localPlane);
-                        Solid solid = myPart.GetSolid() as Solid;
-                        TSM.Component component1 = new TSM.Component();
-                        component1.Number = 1000001;
-                        component1.LoadAttributesFromFile("standard");
-                        component1.SetAttribute("bar1_no", 4);
-                        component1.SetAttribute("cc_side", 45);
-                        component1.SetAttribute("cc_bottom", 45);
-
-                        TSG.Point p1 = new TSG.Point(solid.MinimumPoint.X, solid.MinimumPoint.Y, solid.MaximumPoint.Z);
-                        TSG.Point p2 = new TSG.Point(solid.MaximumPoint.X, solid.MinimumPoint.Y, solid.MaximumPoint.Z);
-                        TSG.Point p3 = new TSG.Point(solid.MinimumPoint.X, solid.MinimumPoint.Y, solid.MinimumPoint.Z);
-
-                        ComponentInput input1 = new ComponentInput();
-                        input1.AddInputObject(myPart);
-                        input1.AddTwoInputPositions(p1, p2);
-                        input1.AddOneInputPosition(p3);
-
-                        component1.SetComponentInput(input1);
-
-                        component1.Insert();
-                        if (!component1.Insert())
-                        {
-                            Console.WriteLine("Component Insert failed");
-                        }
-                    }
-                }
-                myModel.CommitChanges();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
         private void Form1_Load(object sender, EventArgs e)
         {
         }
@@ -180,6 +128,7 @@ namespace RebarCreate
 
         private void button3_Click(object sender, EventArgs e)
         {
+            Model model = new Model();
         }
     }
 }
