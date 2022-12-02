@@ -45,6 +45,7 @@ namespace RebarCreate
                 #region Get Center Point
 
                 List<TSG.Point> pointList = new List<TSG.Point>();
+
                 while (myEnum.MoveNext())
                 {
                     Beam beam = myEnum.Current as Beam;
@@ -55,6 +56,7 @@ namespace RebarCreate
 
                 #endregion Get Center Point
 
+                myEnum.Reset();
                 while (myEnum.MoveNext())
                 {
                     Beam beam = myEnum.Current as Beam;
@@ -80,16 +82,17 @@ namespace RebarCreate
                         string beamOriented = null;
                         if (beam.StartPoint.Y == beam.EndPoint.Y)
                         {
-                            beamOriented = "horizontal";
+                            beamOriented = "hor";
                             //beamPointList.Add()
                         }
                         else if (beam.StartPoint.X == beam.StartPoint.X)
                         {
-                            beamOriented = "vertical";
+                            beamOriented = "ver";
                         }
 
                         #endregion Detect Oriented
 
+                        //MessageBox.Show(beamOriented);
                         workPlane.SetCurrentTransformationPlane(localPlane);
 
                         #region Solid
@@ -105,8 +108,8 @@ namespace RebarCreate
 
                         #endregion Solid
 
-                        CreateTopRebar(beam, MinX, MinZ, MaxX, MaxY, MaxZ, "13");
-                        CreateBotRebar(beam, MinX, MinY, MinZ, MaxX, MaxZ, "16");
+                        CreateTopRebar(beam, MinX, MinZ, MaxX, MaxY, MaxZ, "13", beamOriented);
+                        CreateBotRebar(beam, MinX, MinY, MinZ, MaxX, MaxZ, "16", beamOriented);
                         workPlane.SetCurrentTransformationPlane(currentPlane);
                         myModel.CommitChanges();
                     }
@@ -135,7 +138,7 @@ namespace RebarCreate
             return centerPoint;
         }
 
-        private void CreateBotRebar(Beam beam, double MinX, double MinY, double MinZ, double MaxX, double MaxZ, string radius)
+        private void CreateBotRebar(Beam beam, double MinX, double MinY, double MinZ, double MaxX, double MaxZ, string radius, string beamOriented)
         {
             #region Bot rebar
 
@@ -155,15 +158,18 @@ namespace RebarCreate
             RebarPolygonBot.Points.Add(pb2);
             RebarPolygonBot.Points.Add(pb3);
             RebarPolygonBot.Points.Add(pb4);
-            insertBeamInfo(spBot, epBot, RebarPolygonBot, beam, radius, "BOT BAR");
+            insertBeamInfo(spBot, epBot, RebarPolygonBot, beam, radius, "BOT BAR", beamOriented);
 
             #endregion Bot rebar
         }
 
-        private void CreateTopRebar(Beam beam, double MinX, double MinZ, double MaxX, double MaxY, double MaxZ, string radius)
+        private void CreateTopRebar(Beam beam, double MinX, double MinZ, double MaxX, double MaxY, double MaxZ, string radius, string beamOriented)
         {
             #region Top rebar
 
+            if (beamOriented == "ver")
+            {
+            }
             TSG.Point pt1 = new TSG.Point(MinX, MaxY - 46, MinZ);
             TSG.Point pt2 = new TSG.Point(MinX, MaxY - 46, MaxZ);
             TSG.Point pt3 = new TSG.Point(MaxX, MaxY - 46, MaxZ);
@@ -177,7 +183,7 @@ namespace RebarCreate
             RebarPolygonTop.Points.Add(pt2);
             RebarPolygonTop.Points.Add(pt3);
             RebarPolygonTop.Points.Add(pt4);
-            insertBeamInfo(spTop, epTop, RebarPolygonTop, beam, radius, "TOP BAR");
+            insertBeamInfo(spTop, epTop, RebarPolygonTop, beam, radius, "TOP BAR", beamOriented);
 
             #endregion Top rebar
         }
@@ -195,7 +201,7 @@ namespace RebarCreate
             }
         }
 
-        public void insertBeamInfo(TSG.Point sp, TSG.Point ep, Polygon RebarPolygonBot, Beam beam, string radius, string rebarName)
+        public void insertBeamInfo(TSG.Point sp, TSG.Point ep, Polygon RebarPolygonBot, Beam beam, string radius, string rebarName, string beamOriented)
         {
             double radiusDouble = Convert.ToDouble(radius);
             RebarGroup rebar = new RebarGroup()
@@ -207,12 +213,6 @@ namespace RebarCreate
                 Class = 2,
                 Size = radius,
             };
-            //rebar.StartPoint = sp;
-            //rebar.EndPoint = ep;
-            //rebar.Name = "TOP BAR";
-            //rebar.Grade = "H";
-            //rebar.Class = 2;
-            //rebar.Size = radius;
 
             rebar.Polygons.Add(RebarPolygonBot);
             rebar.RadiusValues.Add(2 * radiusDouble);
@@ -237,12 +237,31 @@ namespace RebarCreate
                 rebar.StartPointOffsetValue = 285;
                 rebar.EndPointOffsetValue = 285;
             }
-            ArrayList onPlanOffsets = new ArrayList
+
+            //PlanOffsets
+            ArrayList onPlanOffsets = null;
+            if (beamOriented == "hor")
+            {
+                onPlanOffsets = new ArrayList
             {
                 (200 - 38 - radiusDouble) * -1,
                 0.0,
                 (200 - 38 - radiusDouble) * -1
             };
+            }
+            else if (beamOriented == "ver")
+            {
+                onPlanOffsets = new ArrayList
+            {
+                (38 + radiusDouble),
+                0.0,
+                (38 + radiusDouble)
+            };
+            };
+            if (onPlanOffsets == null)
+            {
+                MessageBox.Show("false");
+            }
             rebar.OnPlaneOffsets = onPlanOffsets;
 
             rebar.ExcludeType = RebarGroup.ExcludeTypeEnum.EXCLUDE_TYPE_NONE;
@@ -251,8 +270,6 @@ namespace RebarCreate
             rebar.StartFromPlaneOffset = 28 + radiusDouble / 2;
             rebar.EndFromPlaneOffset = 38 + radiusDouble / 2;
             rebar.Insert();
-            rebar.Name = "Modified!";
-            rebar.Modify();
 
             //if (rebar.Insert())
             //{
