@@ -155,9 +155,15 @@ namespace RebarCreate
 
                         #endregion Solid
 
-                        CreateTopRebar(beam, MinX, MinZ, MaxX, MinY, MaxY, MaxZ, "13", beamOriented, beamPosition);
-                        CreateBotRebar(beam, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "16", beamOriented, beamPosition);
-#warning Reset working plan
+                        ArrayList numOfRebar2 = new ArrayList() { 2.0 };
+                        ArrayList numOfRebar3 = new ArrayList() { 3.0 };
+                        ArrayList rebarSpacing = new ArrayList() { 100 };
+
+                        CreateTopRebar(beam, MinX, MinZ, MaxX, MinY, MaxY, MaxZ, "13", beamOriented, beamPosition, numOfRebar2);
+                        CreateBotRebar(beam, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "16", beamOriented, beamPosition, numOfRebar2);
+                        //CreateStirrup(beam, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "8", beamOriented, beamPosition, rebarSpacing);
+
+#warning    Reset working plan
                         workPlane.SetCurrentTransformationPlane(currentPlane);
                         myModel.CommitChanges();
                     }
@@ -186,7 +192,7 @@ namespace RebarCreate
             return centerPoint;
         }
 
-        private void CreateBotRebar(Beam beam, double MinX, double MaxY, double MinY, double MinZ, double MaxX, double MaxZ, string radius, string beamOriented, string beamPosition)
+        private void CreateBotRebar(Beam beam, double MinX, double MaxY, double MinY, double MinZ, double MaxX, double MaxZ, string radius, string beamOriented, string beamPosition, ArrayList numOfRebar)
         {
             #region Bot rebar
 
@@ -245,15 +251,12 @@ namespace RebarCreate
                     break;
             }
 
-            //TSG.Point sp = beam.GetCenterLine(true)[0] as TSG.Point;
-            //TSG.Point ep = beam.GetCenterLine(true)[1] as TSG.Point;
-
-            InsertBeamInfo(spBot, epBot, RebarPolygonBot, beam, radius, "BOT BAR", beamOriented);
+            InsertRebarInfo(spBot, epBot, RebarPolygonBot, beam, radius, "BOT BAR", beamOriented, numOfRebar);
 
             #endregion Bot rebar
         }
 
-        private void CreateTopRebar(Beam beam, double MinX, double MinZ, double MaxX, double MinY, double MaxY, double MaxZ, string radius, string beamOriented, string beamPosition)
+        private void CreateTopRebar(Beam beam, double MinX, double MinZ, double MaxX, double MinY, double MaxY, double MaxZ, string radius, string beamOriented, string beamPosition, ArrayList numOfRebar)
         {
             #region Top rebar
 
@@ -311,7 +314,7 @@ namespace RebarCreate
                     break;
             }
 
-            InsertBeamInfo(spTop, epTop, RebarPolygonTop, beam, radius, "TOP BAR", beamOriented);
+            InsertRebarInfo(spTop, epTop, RebarPolygonTop, beam, radius, "TOP BAR", beamOriented, numOfRebar);
 
             #endregion Top rebar
         }
@@ -331,7 +334,7 @@ namespace RebarCreate
             }
         }
 
-        public void InsertBeamInfo(TSG.Point sp, TSG.Point ep, Polygon RebarPolygonBot, Beam beam, string radius, string rebarName, string beamOriented)
+        public void InsertRebarInfo(TSG.Point sp, TSG.Point ep, Polygon RebarPolygon, Beam beam, string radius, string rebarName, string beamOriented, ArrayList numOrSpacingOfRebar)
         {
             double radiusDouble = Convert.ToDouble(radius);
             RebarGroup rebar = new RebarGroup()
@@ -344,25 +347,41 @@ namespace RebarCreate
                 Size = radius,
             };
 
-            rebar.Polygons.Add(RebarPolygonBot);
+            rebar.Polygons.Add(RebarPolygon);
+            if (rebarName == "TOP BAR" || rebarName == "BOT BAR")
+            {
+                BeamMainbarInfo(beam, beamOriented, radiusDouble, rebar, numOrSpacingOfRebar);
+            }
+            else if (rebarName == "STIRRUP BAR")
+            {
+                BeamStirrupBarInfo(beam, beamOriented, radiusDouble, rebar, numOrSpacingOfRebar);
+            }
+
+            //if (rebar.Insert())
+            //{
+            //    MessageBox.Show("Success!");
+            //}
+        }
+
+        private static void BeamMainbarInfo(Beam beam, string beamOriented, double radiusDouble, RebarGroup rebar, ArrayList numOfRebar)
+        {
             rebar.RadiusValues.Add(2 * radiusDouble);
             rebar.StartHook.Shape = RebarHookData.RebarHookShapeEnum.NO_HOOK;
             rebar.EndHook.Shape = RebarHookData.RebarHookShapeEnum.NO_HOOK;
 
             rebar.SpacingType = RebarGroup.RebarGroupSpacingTypeEnum.SPACING_TYPE_EXACT_NUMBER;
 
-            ArrayList numOfRebar = new ArrayList() { 2.0 };
             rebar.Spacings = numOfRebar;
             rebar.StartPointOffsetType =
                 Reinforcement.RebarOffsetTypeEnum.OFFSET_TYPE_LEG_LENGTH;
             rebar.EndPointOffsetType =
                 Reinforcement.RebarOffsetTypeEnum.OFFSET_TYPE_LEG_LENGTH;
-            if (radius == "16")
+            if (radiusDouble == 16.0)
             {
                 rebar.StartPointOffsetValue = 390;
                 rebar.EndPointOffsetValue = 390;
             }
-            else if (radius == "13")
+            else if (radiusDouble == 13.0)
             {
                 rebar.StartPointOffsetValue = 285;
                 rebar.EndPointOffsetValue = 285;
@@ -402,22 +421,126 @@ namespace RebarCreate
             rebar.StartFromPlaneOffset = 28 + radiusDouble / 2;
             rebar.EndFromPlaneOffset = 38 + radiusDouble / 2;
             rebar.Insert();
+        }
 
-            //if (rebar.Insert())
-            //{
-            //    MessageBox.Show("Success!");
-            //}
+        public void CreateStirrup(Beam beam, double MinX, double MaxY, double MinY, double MinZ, double MaxX, double MaxZ, string radius, string beamOriented, string beamPosition, ArrayList rebarSpacing)
+        {
+            TSG.Point p1 = new TSG.Point(MinX, MinY, MinZ);
+            TSG.Point p2 = new TSG.Point(MinX, MinY, MaxZ);
+            TSG.Point p3 = new TSG.Point(MinX, MaxY, MaxZ);
+            TSG.Point p4 = new TSG.Point(MinX, MaxY, MinZ);
+
+            TSG.Point sp = null;
+            TSG.Point ep = null;
+            //TSG.Point sp = beam.GetCenterLine(true)[0] as TSG.Point;
+            //TSG.Point ep = beam.GetCenterLine(true)[1] as TSG.Point;
+            Polygon RebarPolygon = new Polygon();
+            switch (beamOriented)
+            {
+                //case "hor":
+                //    RebarPolygon.Points.Add(p1);
+                //    RebarPolygon.Points.Add(p2);
+                //    RebarPolygon.Points.Add(p3);
+                //    RebarPolygon.Points.Add(p4);
+                //    sp = new TSG.Point(MinX, MinY, MinZ);
+                //    ep = new TSG.Point(MaxX, MinY, MinZ);
+                //    break;
+
+                case "ver":
+                    RebarPolygon.Points.Add(p1);
+                    RebarPolygon.Points.Add(p2);
+                    RebarPolygon.Points.Add(p3);
+                    RebarPolygon.Points.Add(p4);
+                    sp = new TSG.Point(MinX, MaxY, (MinZ + MaxZ) / 2);
+                    ep = new TSG.Point(MaxX, MaxY, (MinZ + MaxZ) / 2);
+                    break;
+            }
+            InsertRebarInfo(sp, ep, RebarPolygon, beam, radius, "STIRRUP BAR", beamOriented, rebarSpacing);
+        }
+
+#warning Links bar info
+
+        private static void BeamStirrupBarInfo(Beam beam, string beamOriented, double radiusDouble, RebarGroup rebar, ArrayList rebarSpacing)
+        {
+            rebar.RadiusValues.Add(2 * radiusDouble);
+            rebar.StartHook.Shape = RebarHookData.RebarHookShapeEnum.NO_HOOK;
+            rebar.EndHook.Shape = RebarHookData.RebarHookShapeEnum.NO_HOOK;
+
+            rebar.SpacingType = RebarGroup.RebarGroupSpacingTypeEnum.SPACING_TYPE_TARGET_SPACE;
+
+            rebar.Spacings = rebarSpacing;
+            rebar.StartPointOffsetType =
+                Reinforcement.RebarOffsetTypeEnum.OFFSET_TYPE_COVER_THICKNESS;
+            rebar.EndPointOffsetType =
+                Reinforcement.RebarOffsetTypeEnum.OFFSET_TYPE_COVER_THICKNESS;
+            //Hard code for radiusDouble = 8
+            rebar.StartPointOffsetValue = 30;
+            rebar.EndPointOffsetValue = 30;
+
+            //PlanOffsets
+#warning Can chack lai cong thuc cho link bars
+            ArrayList onPlanOffsets = null;
+            /*
+            if (beamOriented == "hor")
+            {
+                onPlanOffsets = new ArrayList
+            {
+                (200 - 38 - radiusDouble) * -1,
+                0.0,
+                (200 - 38 - radiusDouble) * -1
+            };
+            }
+            else if (beamOriented == "ver")
+            {
+                onPlanOffsets = new ArrayList
+            {
+                (38 + radiusDouble),
+                0.0,
+                (38 + radiusDouble)
+            };
+            };
+            if (onPlanOffsets == null)
+            {
+                MessageBox.Show("false");
+            }
+            */
+            onPlanOffsets = new ArrayList { 30 };
+            rebar.OnPlaneOffsets = onPlanOffsets;
+
+            //
+            if (beamOriented == "hor")
+            {
+                rebar.StartFromPlaneOffset = 30;
+                rebar.EndFromPlaneOffset = 30;
+            }
+            else if (beamOriented == "ver")
+            {
+                rebar.StartFromPlaneOffset = 200;
+                rebar.EndFromPlaneOffset = 200;
+            };
+            rebar.ExcludeType = RebarGroup.ExcludeTypeEnum.EXCLUDE_TYPE_NONE;
+            rebar.Father = beam;
+            rebar.Insert();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             Model model = new Model();
-            Beam MyBeam = new Beam();
-            MyBeam.DeformingData.Angle = 0.0;
-            MyBeam.DeformingData.Angle2 = 45.00;
-            MyBeam.DeformingData.Cambering = 10.0;
-            MyBeam.DeformingData.Shortening = 20.0;
-            MyBeam.Insert();
+            Picker picker = new Picker();
+            ModelObjectEnumerator modelObjectEnumerator = picker.PickObjects(Picker.PickObjectsEnum.PICK_N_PARTS);
+            while (modelObjectEnumerator.MoveNext())
+            {
+                if (modelObjectEnumerator != null)
+                {
+                    Beam beam = modelObjectEnumerator.Current as Beam;
+                    TSG.Point sp = beam.GetCenterLine(true)[0] as TSG.Point;
+                    TSG.Point ep = beam.GetCenterLine(true)[1] as TSG.Point;
+                    ControlPoint controlPoint1 = new ControlPoint(sp);
+                    ControlPoint controlPoint2 = new ControlPoint(ep);
+                    controlPoint1.Insert();
+                    controlPoint2.Insert();
+                }
+            }
             model.CommitChanges();
         }
     }
