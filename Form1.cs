@@ -67,6 +67,7 @@ namespace RebarCreate
 
                         WorkPlaneHandler workPlane =
                             myModel.GetWorkPlaneHandler();
+
                         TransformationPlane currentPlane =
                             workPlane.GetCurrentTransformationPlane();
                         TransformationPlane localPlane =
@@ -157,11 +158,11 @@ namespace RebarCreate
 
                         ArrayList numOfRebar2 = new ArrayList() { 2.0 };
                         ArrayList numOfRebar3 = new ArrayList() { 3.0 };
-                        ArrayList rebarSpacing = new ArrayList() { 100 };
+                        ArrayList rebarSpacing = new ArrayList() { 100.0 };
 
                         CreateTopRebar(beam, MinX, MinZ, MaxX, MinY, MaxY, MaxZ, "13", beamOriented, beamPosition, numOfRebar2);
                         CreateBotRebar(beam, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "16", beamOriented, beamPosition, numOfRebar2);
-                        //CreateStirrup(beam, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "8", beamOriented, beamPosition, rebarSpacing);
+                        CreateStirrup(beam, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "8", beamOriented, beamPosition, rebarSpacing);
 
 #warning    Reset working plan
                         workPlane.SetCurrentTransformationPlane(currentPlane);
@@ -356,6 +357,10 @@ namespace RebarCreate
             {
                 BeamStirrupBarInfo(beam, beamOriented, radiusDouble, rebar, numOrSpacingOfRebar);
             }
+            else
+            {
+                MessageBox.Show("Rebar name error!");
+            }
 
             //if (rebar.Insert())
             //{
@@ -437,20 +442,22 @@ namespace RebarCreate
             Polygon RebarPolygon = new Polygon();
             switch (beamOriented)
             {
-                //case "hor":
-                //    RebarPolygon.Points.Add(p1);
-                //    RebarPolygon.Points.Add(p2);
-                //    RebarPolygon.Points.Add(p3);
-                //    RebarPolygon.Points.Add(p4);
-                //    sp = new TSG.Point(MinX, MinY, MinZ);
-                //    ep = new TSG.Point(MaxX, MinY, MinZ);
-                //    break;
+                case "hor":
+                    RebarPolygon.Points.Add(p1);
+                    RebarPolygon.Points.Add(p2);
+                    RebarPolygon.Points.Add(p3);
+                    RebarPolygon.Points.Add(p4);
+                    RebarPolygon.Points.Add(p1);
+                    sp = new TSG.Point(MinX, MinY, (MinZ + MaxZ) / 2);
+                    ep = new TSG.Point(MaxX, MinY, (MinZ + MaxZ) / 2);
+                    break;
 
                 case "ver":
                     RebarPolygon.Points.Add(p1);
                     RebarPolygon.Points.Add(p2);
                     RebarPolygon.Points.Add(p3);
                     RebarPolygon.Points.Add(p4);
+                    RebarPolygon.Points.Add(p1);
                     sp = new TSG.Point(MinX, MaxY, (MinZ + MaxZ) / 2);
                     ep = new TSG.Point(MaxX, MaxY, (MinZ + MaxZ) / 2);
                     break;
@@ -474,8 +481,8 @@ namespace RebarCreate
             rebar.EndPointOffsetType =
                 Reinforcement.RebarOffsetTypeEnum.OFFSET_TYPE_COVER_THICKNESS;
             //Hard code for radiusDouble = 8
-            rebar.StartPointOffsetValue = 30;
-            rebar.EndPointOffsetValue = 30;
+            rebar.StartPointOffsetValue = 30.0;
+            rebar.EndPointOffsetValue = 30.0;
 
             //PlanOffsets
 #warning Can chack lai cong thuc cho link bars
@@ -504,19 +511,19 @@ namespace RebarCreate
                 MessageBox.Show("false");
             }
             */
-            onPlanOffsets = new ArrayList { 30 };
+            onPlanOffsets = new ArrayList { 30.0 };
             rebar.OnPlaneOffsets = onPlanOffsets;
 
             //
             if (beamOriented == "hor")
             {
-                rebar.StartFromPlaneOffset = 30;
-                rebar.EndFromPlaneOffset = 30;
+                rebar.StartFromPlaneOffset = 30.0;
+                rebar.EndFromPlaneOffset = 30.0;
             }
             else if (beamOriented == "ver")
             {
-                rebar.StartFromPlaneOffset = 200;
-                rebar.EndFromPlaneOffset = 200;
+                rebar.StartFromPlaneOffset = 200.0;
+                rebar.EndFromPlaneOffset = 200.0;
             };
             rebar.ExcludeType = RebarGroup.ExcludeTypeEnum.EXCLUDE_TYPE_NONE;
             rebar.Father = beam;
@@ -542,6 +549,15 @@ namespace RebarCreate
                 }
             }
             model.CommitChanges();
+        }
+
+        private void crank_btn_Click(object sender, EventArgs e)
+        {
+            Model model = new Model();
+            Picker picker = new Picker();
+            ModelObject myRebar = picker.PickObject(Picker.PickObjectEnum.PICK_ONE_REINFORCEMENT);
+            RebarGroup rebarGroup = myRebar as RebarGroup;
+            MessageBox.Show(rebarGroup.GetType());
         }
     }
 }
