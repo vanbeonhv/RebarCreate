@@ -39,6 +39,14 @@ namespace RebarCreate
             try
             {
                 Model myModel = new Model();
+                if (myModel.GetConnectionStatus())
+                {
+                    Console.WriteLine("Model Connected!");
+                }
+                else
+                {
+                    Console.WriteLine("Fail to connect!");
+                }
                 Picker picker = new Picker();
                 ModelObjectEnumerator myEnum =
                     picker.PickObjects(Picker.PickObjectsEnum.PICK_N_PARTS);
@@ -89,7 +97,7 @@ namespace RebarCreate
                             beamOriented = "hor";
                             //beamPointList.Add()
                         }
-                        else if (gapX >= 0 && gapX <= 1)
+                        else if (gapX >= -1 && gapX <= 1)
                         {
                             beamOriented = "ver";
                         }
@@ -230,7 +238,7 @@ namespace RebarCreate
                     epBot = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MaxZ);
                     break;
 
-                case "right":
+                case "left":
                     RebarPolygonBot.Points.Add(pb1);
                     RebarPolygonBot.Points.Add(pb2);
                     RebarPolygonBot.Points.Add(pb3);
@@ -239,7 +247,7 @@ namespace RebarCreate
                     epBot = new TSG.Point((MinX + MaxX) / 2, MinY + 46, MinZ);
                     break;
 
-                case "left":
+                case "right":
                     RebarPolygonBot.Points.Add(pb2);
                     RebarPolygonBot.Points.Add(pb1);
                     RebarPolygonBot.Points.Add(pb4);
@@ -261,6 +269,7 @@ namespace RebarCreate
         {
             #region Top rebar
 
+            string rebarName = "TOP BAR_H" + radius;
             TSG.Point pb1 = new TSG.Point(MinX, MinY + 46, MinZ);
             TSG.Point pb2 = new TSG.Point(MinX, MinY + 46, MaxZ);
             TSG.Point pb3 = new TSG.Point(MaxX, MinY + 46, MaxZ);
@@ -295,7 +304,7 @@ namespace RebarCreate
                     epTop = new TSG.Point((MinX + MaxX) / 2, MinY + 46, MaxZ);
                     break;
 
-                case "right":
+                case "left":
                     RebarPolygonTop.Points.Add(pt1);
                     RebarPolygonTop.Points.Add(pt2);
                     RebarPolygonTop.Points.Add(pt3);
@@ -305,7 +314,7 @@ namespace RebarCreate
                     epTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MinZ);
                     break;
 
-                case "left":
+                case "right":
                     RebarPolygonTop.Points.Add(pt2);
                     RebarPolygonTop.Points.Add(pt1);
                     RebarPolygonTop.Points.Add(pt4);
@@ -315,7 +324,7 @@ namespace RebarCreate
                     break;
             }
 
-            InsertRebarInfo(spTop, epTop, RebarPolygonTop, beam, radius, "TOP BAR", beamOriented, numOfRebar);
+            InsertRebarInfo(spTop, epTop, RebarPolygonTop, beam, radius, rebarName, beamOriented, numOfRebar);
 
             #endregion Top rebar
         }
@@ -349,11 +358,11 @@ namespace RebarCreate
             };
 
             rebar.Polygons.Add(RebarPolygon);
-            if (rebarName == "TOP BAR" || rebarName == "BOT BAR")
+            if (rebarName.Contains("TOP BAR") || rebarName.Contains("BOT BAR"))
             {
                 BeamMainbarInfo(beam, beamOriented, radiusDouble, rebar, numOrSpacingOfRebar);
             }
-            else if (rebarName == "STIRRUP BAR")
+            else if (rebarName.Contains("STIRRUP BAR"))
             {
                 BeamStirrupBarInfo(beam, beamOriented, radiusDouble, rebar, numOrSpacingOfRebar);
             }
@@ -470,8 +479,12 @@ namespace RebarCreate
         private static void BeamStirrupBarInfo(Beam beam, string beamOriented, double radiusDouble, RebarGroup rebar, ArrayList rebarSpacing)
         {
             rebar.RadiusValues.Add(2 * radiusDouble);
-            rebar.StartHook.Shape = RebarHookData.RebarHookShapeEnum.NO_HOOK;
-            rebar.EndHook.Shape = RebarHookData.RebarHookShapeEnum.NO_HOOK;
+            RebarHookData customHook = new RebarHookData() { Shape = RebarHookData.RebarHookShapeEnum.CUSTOM_HOOK, Angle = 90.0, Radius = 16.0, Length = 81.0 };
+            //rebar.StartHook.Shape = RebarHookData.RebarHookShapeEnum.CUSTOM_HOOK;
+            //rebar.StartHook.Angle = 90.0;
+            //rebar.EndHook.Shape = RebarHookData.RebarHookShapeEnum.CUSTOM_HOOK;'
+            rebar.StartHook = customHook;
+            rebar.EndHook = customHook;
 
             rebar.SpacingType = RebarGroup.RebarGroupSpacingTypeEnum.SPACING_TYPE_TARGET_SPACE;
 
@@ -557,7 +570,7 @@ namespace RebarCreate
             Picker picker = new Picker();
             ModelObject myRebar = picker.PickObject(Picker.PickObjectEnum.PICK_ONE_REINFORCEMENT);
             RebarGroup rebarGroup = myRebar as RebarGroup;
-            MessageBox.Show(rebarGroup.GetType());
+            //MessageBox.Show(rebarGroup.GetType());
         }
     }
 }
