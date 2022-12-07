@@ -68,11 +68,15 @@ namespace RebarCreate
                 #endregion Get Center Point
 
                 myEnum.Reset();
+                ArrayList beamList = new ArrayList();
+                TSMUI.ModelObjectSelector partSelector = new TSMUI.ModelObjectSelector();
                 while (myEnum.MoveNext())
                 {
                     Beam beam = myEnum.Current as Beam;
                     if (beam != null)
                     {
+                        beamList.Add(beam);
+
                         #region Workplane
 
                         WorkPlaneHandler workPlane =
@@ -151,6 +155,8 @@ namespace RebarCreate
 
                         #endregion Detect Position
 
+                        Console.WriteLine(beamPosition);
+
                         workPlane.SetCurrentTransformationPlane(localPlane);
 
                         #region Solid
@@ -175,9 +181,11 @@ namespace RebarCreate
                         CreateStirrup(beam, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "8", beamOriented, beamPosition, rebarSpacing);
 
 #warning    Reset working plan
-                        //workPlane.SetCurrentTransformationPlane(currentPlane);
+                        workPlane.SetCurrentTransformationPlane(currentPlane);
                         myModel.CommitChanges();
                     }
+                    partSelector.Select(beamList);
+                    Thread.Sleep(500);
                 }
             }
             catch (Exception ex)
