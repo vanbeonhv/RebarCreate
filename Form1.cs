@@ -555,9 +555,12 @@ namespace RebarCreate
         {
             Model model = new Model();
             Picker picker = new Picker();
-            ModelObject myRebar = picker.PickObject(Picker.PickObjectEnum.PICK_ONE_REINFORCEMENT);
-            RebarGroup rebarGroup = myRebar as RebarGroup;
-            MessageBox.Show(rebarGroup.GetType());
+            ModelObject modelObject = picker.PickObject(Picker.PickObjectEnum.PICK_ONE_PART);
+            Beam myBeam = modelObject as Beam;
+            if (myBeam != null)
+            {
+                //Solid solid = new Solid();
+            }
         }
     }
 }
