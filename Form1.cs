@@ -20,6 +20,8 @@ using TSG = Tekla.Structures.Geometry3d;
 using System.Collections;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using Tekla.Structures.ModelInternal;
+using Tekla.Structures.Solid;
+using System.Threading;
 
 namespace RebarCreate
 {
@@ -173,14 +175,14 @@ namespace RebarCreate
                         CreateStirrup(beam, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "8", beamOriented, beamPosition, rebarSpacing);
 
 #warning    Reset working plan
-                        workPlane.SetCurrentTransformationPlane(currentPlane);
+                        //workPlane.SetCurrentTransformationPlane(currentPlane);
                         myModel.CommitChanges();
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw;
+                MessageBox.Show(ex.ToString());
             }
         }
 
@@ -547,20 +549,47 @@ namespace RebarCreate
         {
             Model model = new Model();
             Picker picker = new Picker();
-            ModelObjectEnumerator modelObjectEnumerator = picker.PickObjects(Picker.PickObjectsEnum.PICK_N_PARTS);
-            while (modelObjectEnumerator.MoveNext())
+            //ModelObjectEnumerator modelObjectEnumerator = picker.PickObjects(Picker.PickObjectsEnum.PICK_N_PARTS);
+            //while (modelObjectEnumerator.MoveNext())
+            //{
+            //    if (modelObjectEnumerator != null)
+            //    {
+            //        Beam beam = modelObjectEnumerator.Current as Beam;
+            //        TSG.Point sp = beam.GetCenterLine(true)[0] as TSG.Point;
+            //        TSG.Point ep = beam.GetCenterLine(true)[1] as TSG.Point;
+            //        ControlPoint controlPoint1 = new ControlPoint(sp);
+            //        ControlPoint controlPoint2 = new ControlPoint(ep);
+            //        controlPoint1.Insert();
+            //        controlPoint2.Insert();
+            //    }
+            //}
+            Picker Picker = new Picker();
+            try
             {
-                if (modelObjectEnumerator != null)
+                PickInput Input = Picker.PickFace("");
+                IEnumerator MyEnum = Input.GetEnumerator();
+                while (MyEnum.MoveNext())
                 {
-                    Beam beam = modelObjectEnumerator.Current as Beam;
-                    TSG.Point sp = beam.GetCenterLine(true)[0] as TSG.Point;
-                    TSG.Point ep = beam.GetCenterLine(true)[1] as TSG.Point;
-                    ControlPoint controlPoint1 = new ControlPoint(sp);
-                    ControlPoint controlPoint2 = new ControlPoint(ep);
-                    controlPoint1.Insert();
-                    controlPoint2.Insert();
+                    InputItem Item = MyEnum.Current as InputItem;
+                    if (Item.GetInputType() == InputItem.InputTypeEnum.INPUT_1_OBJECT)
+                    {
+                        ModelObject M = Item.GetData() as ModelObject;
+                        MessageBox.Show(M.Identifier.ToString());
+                    }
+                    if (Item.GetInputType() == InputItem.InputTypeEnum.INPUT_POLYGON)
+                    {
+                        ArrayList Points = Item.GetData() as ArrayList;
+                        MessageBox.Show((Points[0] as TSG.Point).ToString());
+                        ControlPoint controlPoint = new ControlPoint(Points[0] as TSG.Point);
+                        controlPoint.Insert();
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+
             model.CommitChanges();
         }
 
@@ -568,9 +597,45 @@ namespace RebarCreate
         {
             Model model = new Model();
             Picker picker = new Picker();
-            ModelObject myRebar = picker.PickObject(Picker.PickObjectEnum.PICK_ONE_REINFORCEMENT);
-            RebarGroup rebarGroup = myRebar as RebarGroup;
-            //MessageBox.Show(rebarGroup.GetType());
+            ModelObject myBeam = picker.PickObject(Picker.PickObjectEnum.PICK_ONE_PART);
+            List<TSG.Point> myPointsList = new List<TSG.Point>();
+            Beam beam = myBeam as Beam;
+            if (beam != null)
+            {
+                Solid solid = beam.GetSolid();
+                FaceEnumerator faceEnum = solid.GetFaceEnumerator();
+                while (faceEnum.MoveNext())
+                {
+                    Face myFace = faceEnum.Current as Face;
+                    if (myFace != null)
+                    {
+                        if (myFace.Normal == new Vector(1.0, 0.0, 0.0))
+                        {
+                            Console.WriteLine("true");
+                            LoopEnumerator myLoopEnum = myFace.GetLoopEnumerator();
+                            while (myLoopEnum.MoveNext())
+                            {
+                                Loop myLoop = myLoopEnum.Current as Loop;
+                                if (myLoop != null)
+                                {
+                                    VertexEnumerator myVertexEnum = myLoop.GetVertexEnumerator();
+                                    while (myVertexEnum.MoveNext())
+                                    {
+                                        TSG.Point myVertex = myVertexEnum.Current as TSG.Point;
+                                        myPointsList.Add(myVertex);
+                                        ControlPoint controlPoint = new ControlPoint(myVertex);
+                                        controlPoint.Insert();
+                                        Console.WriteLine("myVertex: " + myVertex.ToString());
+                                        Console.WriteLine("-------------------------------");
+                                        model.CommitChanges();
+                                        Thread.Sleep(500);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
