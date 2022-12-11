@@ -30,7 +30,7 @@
         {
             this.button2 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
-            this.crank_btn = new System.Windows.Forms.Button();
+            this.rmPoints_btn = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button2
@@ -53,22 +53,22 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // crank_btn
+            // rmPoints_btn
             // 
-            this.crank_btn.Location = new System.Drawing.Point(254, 25);
-            this.crank_btn.Name = "crank_btn";
-            this.crank_btn.Size = new System.Drawing.Size(82, 52);
-            this.crank_btn.TabIndex = 3;
-            this.crank_btn.Text = "Crank";
-            this.crank_btn.UseVisualStyleBackColor = true;
-            this.crank_btn.Click += new System.EventHandler(this.crank_btn_Click);
+            this.rmPoints_btn.Location = new System.Drawing.Point(254, 25);
+            this.rmPoints_btn.Name = "rmPoints_btn";
+            this.rmPoints_btn.Size = new System.Drawing.Size(82, 52);
+            this.rmPoints_btn.TabIndex = 3;
+            this.rmPoints_btn.Text = "Remove Points";
+            this.rmPoints_btn.UseVisualStyleBackColor = true;
+            this.rmPoints_btn.Click += new System.EventHandler(this.rmPoints_btn_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(353, 263);
-            this.Controls.Add(this.crank_btn);
+            this.Controls.Add(this.rmPoints_btn);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.button2);
             this.Name = "Form1";
@@ -81,7 +81,7 @@
         #endregion
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button crank_btn;
+        private System.Windows.Forms.Button rmPoints_btn;
     }
 }
 
