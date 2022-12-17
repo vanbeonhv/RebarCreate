@@ -31,6 +31,7 @@
             this.button2 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.rmPoints_btn = new System.Windows.Forms.Button();
+            this.btn_Quit = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button2
@@ -63,11 +64,25 @@
             this.rmPoints_btn.UseVisualStyleBackColor = true;
             this.rmPoints_btn.Click += new System.EventHandler(this.rmPoints_btn_Click);
             // 
+            // btn_Quit
+            // 
+            this.btn_Quit.BackColor = System.Drawing.Color.OrangeRed;
+            this.btn_Quit.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btn_Quit.ForeColor = System.Drawing.Color.Gold;
+            this.btn_Quit.Location = new System.Drawing.Point(242, 213);
+            this.btn_Quit.Name = "btn_Quit";
+            this.btn_Quit.Size = new System.Drawing.Size(99, 38);
+            this.btn_Quit.TabIndex = 4;
+            this.btn_Quit.Text = "Quit!!!";
+            this.btn_Quit.UseVisualStyleBackColor = false;
+            this.btn_Quit.Click += new System.EventHandler(this.btn_Quit_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(353, 263);
+            this.Controls.Add(this.btn_Quit);
             this.Controls.Add(this.rmPoints_btn);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.button2);
@@ -82,6 +97,7 @@
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button rmPoints_btn;
+        private System.Windows.Forms.Button btn_Quit;
     }
 }
 
