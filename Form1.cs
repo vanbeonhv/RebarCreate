@@ -24,6 +24,7 @@ using Tekla.Structures.ModelInternal;
 using Tekla.Structures.Solid;
 using System.Threading;
 using RebarCreate.Functions;
+using ComboBox = System.Windows.Forms.ComboBox;
 
 namespace RebarCreate
 {
@@ -36,6 +37,56 @@ namespace RebarCreate
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            pictureBox1.Image = new Bitmap(Application.StartupPath + "\\Resources\\beams.png");
+            //input for Top Beam
+            cb_topRadiusTop.SelectedIndex = 0;
+            cb_stirrupRadiusTop.SelectedIndex = 0;
+            cb_botRadiusTop.SelectedIndex = 0;
+            cb_topQtyTop.SelectedIndex = 0;
+            cb_stirrupSpacingTop.SelectedIndex = 0;
+            cb_botQtyTop.SelectedIndex = 0;
+
+            //input for Bot Beam
+            cb_topRadiusBot.SelectedIndex = 0;
+            cb_stirrupRadiusBot.SelectedIndex = 0;
+            cb_botRadiusBot.SelectedIndex = 0;
+            cb_topQtyBot.SelectedIndex = 0;
+            cb_stirrupSpacingBot.SelectedIndex = 0;
+            cb_botQtyBot.SelectedIndex = 0;
+
+            //input for Left Beam
+            cb_topRadiusLeft.SelectedIndex = 0;
+            cb_stirrupRadiusLeft.SelectedIndex = 0;
+            cb_botRadiusLeft.SelectedIndex = 0;
+            cb_topQtyLeft.SelectedIndex = 0;
+            cb_stirrupSpacingLeft.SelectedIndex = 0;
+            cb_botQtyLeft.SelectedIndex = 0;
+
+            //input for Right Beam
+            cb_topRadiusRight.SelectedIndex = 0;
+            cb_stirrupRadiusRight.SelectedIndex = 0;
+            cb_botRadiusRight.SelectedIndex = 0;
+            cb_topQtyRight.SelectedIndex = 0;
+            cb_stirrupSpacingRight.SelectedIndex = 0;
+            cb_botQtyRight.SelectedIndex = 0;
+        }
+
+        private string GetInputText(ComboBox comboBox)
+        {
+            string itemText = comboBox.GetItemText(comboBox.SelectedItem);
+            return itemText;
+        }
+
+        private double GetInputDouble(ComboBox comboBox)
+        {
+            double itemDouble = 0.0;
+            string itemText = comboBox.GetItemText(comboBox.SelectedItem);
+            if (double.TryParse(itemText.Trim(), out itemDouble) == false)
+            {
+                itemDouble = 5.0;
+                Console.WriteLine("-Convert text input to double false");
+            }
+            return itemDouble;
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -51,6 +102,49 @@ namespace RebarCreate
                 {
                     Console.WriteLine("Fail to connect!");
                 }
+
+                #region User Input
+
+                string topBarRadiusTop = GetInputText(cb_topRadiusTop);
+                string stirrupRadiusTop = GetInputText(cb_stirrupRadiusTop);
+                string botBarRadiusTop = GetInputText(cb_botRadiusTop);
+                double topRebarQuantityTop = GetInputDouble(cb_topQtyTop);
+                double spacingStirrupTop = GetInputDouble(cb_stirrupSpacingTop);
+                double botRebarQuantityTop = GetInputDouble(cb_botQtyTop);
+
+                string topBarRadiusBot = GetInputText(cb_topRadiusBot);
+                string stirrupRadiusBot = GetInputText(cb_stirrupRadiusBot);
+                string botBarRadiusBot = GetInputText(cb_botRadiusBot);
+                double topRebarQuantityBot = GetInputDouble(cb_topQtyBot);
+                double spacingStirrupBot = GetInputDouble(cb_stirrupSpacingBot);
+                double botRebarQuantityBot = GetInputDouble(cb_botQtyBot);
+
+                string topBarRadiusLeft = GetInputText(cb_topRadiusLeft);
+                string stirrupRadiusLeft = GetInputText(cb_stirrupRadiusLeft);
+                string botBarRadiusLeft = GetInputText(cb_botRadiusLeft);
+                double topRebarQuantityLeft = GetInputDouble(cb_topQtyLeft);
+                double spacingStirrupLeft = GetInputDouble(cb_stirrupSpacingLeft);
+                double botRebarQuantityLeft = GetInputDouble(cb_botQtyLeft);
+
+                string topBarRadiusRight = GetInputText(cb_topRadiusRight);
+                string stirrupRadiusRight = GetInputText(cb_stirrupRadiusRight);
+                string botBarRadiusRight = GetInputText(cb_botRadiusRight);
+                double topRebarQuantityRight = GetInputDouble(cb_topQtyRight);
+                double spacingStirrupRight = GetInputDouble(cb_stirrupSpacingRight);
+                double botRebarQuantityRight = GetInputDouble(cb_botQtyRight);
+
+                Console.WriteLine("topBarRadius" + topBarRadiusLeft);
+
+                string topBarRadius = null;
+                string stirrupRadius = null;
+                string botBarRadius = null;
+
+                ArrayList topRebarQuantity = new ArrayList() { };
+                ArrayList botRebarQuantity = new ArrayList() { };
+                ArrayList spacingStirrup = new ArrayList() { };
+
+                #endregion User Input
+
                 Picker picker = new Picker();
                 ModelObjectEnumerator myEnum =
                     picker.PickObjects(Picker.PickObjectsEnum.PICK_N_PARTS);
@@ -75,17 +169,6 @@ namespace RebarCreate
                     Beam beam = myEnum.Current as Beam;
                     if (beam != null)
                     {
-                        #region User Input
-
-                        string topBarRadius = "13";
-                        string botBarRadius = "16";
-                        string stirrupRadius = "8";
-                        ArrayList numOfRebar2 = new ArrayList() { 2.0 };
-                        ArrayList numOfRebar3 = new ArrayList() { 3.0 };
-                        ArrayList rebarSpacing = new ArrayList() { 100.0 };
-
-                        #endregion User Input
-
                         #region Workplane
 
                         WorkPlaneHandler workPlane =
@@ -134,10 +217,22 @@ namespace RebarCreate
                                 if (beam.StartPoint.Y > centerPoint.Y)
                                 {
                                     beamPosition = "top";
+                                    topBarRadius = topBarRadiusTop;
+                                    stirrupRadius = stirrupRadiusTop;
+                                    botBarRadius = botBarRadiusTop;
+                                    topRebarQuantity.Add(topRebarQuantityTop);
+                                    spacingStirrup.Add(spacingStirrupTop);
+                                    botRebarQuantity.Add(botRebarQuantityTop);
                                 }
                                 else if (beam.StartPoint.Y < centerPoint.Y)
                                 {
                                     beamPosition = "bot";
+                                    topBarRadius = topBarRadiusBot;
+                                    stirrupRadius = stirrupRadiusBot;
+                                    botBarRadius = botBarRadiusBot;
+                                    topRebarQuantity.Add(topRebarQuantityBot);
+                                    spacingStirrup.Add(spacingStirrupBot);
+                                    botRebarQuantity.Add(botRebarQuantityBot);
                                 }
                                 else
                                 {
@@ -149,10 +244,22 @@ namespace RebarCreate
                                 if (beam.StartPoint.X > centerPoint.X)
                                 {
                                     beamPosition = "right";
+                                    topBarRadius = topBarRadiusRight;
+                                    stirrupRadius = stirrupRadiusRight;
+                                    botBarRadius = botBarRadiusRight;
+                                    topRebarQuantity.Add(topRebarQuantityRight);
+                                    spacingStirrup.Add(spacingStirrupRight);
+                                    botRebarQuantity.Add(botRebarQuantityRight);
                                 }
                                 else if (beam.StartPoint.X < centerPoint.X)
                                 {
                                     beamPosition = "left";
+                                    topBarRadius = topBarRadiusLeft;
+                                    stirrupRadius = stirrupRadiusLeft;
+                                    botBarRadius = botBarRadiusLeft;
+                                    topRebarQuantity.Add(topRebarQuantityLeft);
+                                    spacingStirrup.Add(spacingStirrupLeft);
+                                    botRebarQuantity.Add(botRebarQuantityLeft);
                                 }
                                 else
                                 {
@@ -310,7 +417,10 @@ namespace RebarCreate
                         string dropPosition = null;
                         if (facePointsList.Count > 4)
                         {
+                            #region dropPosition
+
                             PointFilter pointFilter = new PointFilter(facePointsList);
+                            //Return dropPosition
                             if (beamPosition == "left" || beamPosition == "right")
                             {
                                 double maxY = pointFilter.MaxY();
@@ -342,20 +452,23 @@ namespace RebarCreate
                                     dropPosition = "left";
                                 }
                             }
+
+                            #endregion dropPosition
+
                             Console.WriteLine(dropPosition);
-                            CreateTopRebar(beam, dropPosition, facePointsList, topBarRadius, beamOriented, beamPosition, numOfRebar2);
-                            CreateStirrupDrop(beam, dropPosition, facePointsList, stirrupRadius, beamOriented, beamPosition, rebarSpacing);
+                            CreateTopRebar(beam, dropPosition, facePointsList, topBarRadius, beamOriented, beamPosition, topRebarQuantity);
+                            CreateStirrupDrop(beam, dropPosition, facePointsList, stirrupRadius, beamOriented, beamPosition, spacingStirrup);
                             workPlane.SetCurrentTransformationPlane(localPlane);
-                            CreateBotRebar(beam, dropPosition, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, botBarRadius, beamOriented, beamPosition, numOfRebar2);
+                            CreateBotRebar(beam, dropPosition, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, botBarRadius, beamOriented, beamPosition, botRebarQuantity);
                             workPlane.SetCurrentTransformationPlane(currentPlane);
                         }
                         else
                         {
                             Console.WriteLine("test");
                             workPlane.SetCurrentTransformationPlane(localPlane);
-                            CreateTopRebar(beam, dropPosition, MinX, MinZ, MaxX, MinY, MaxY, MaxZ, topBarRadius, beamOriented, beamPosition, numOfRebar2);
-                            CreateBotRebar(beam, dropPosition, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, botBarRadius, beamOriented, beamPosition, numOfRebar2);
-                            CreateStirrup(beam, dropPosition, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, stirrupRadius, beamOriented, beamPosition, rebarSpacing);
+                            CreateTopRebar(beam, dropPosition, MinX, MinZ, MaxX, MinY, MaxY, MaxZ, topBarRadius, beamOriented, beamPosition, topRebarQuantity);
+                            CreateBotRebar(beam, dropPosition, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, botBarRadius, beamOriented, beamPosition, botRebarQuantity);
+                            CreateStirrup(beam, dropPosition, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, stirrupRadius, beamOriented, beamPosition, spacingStirrup);
                             workPlane.SetCurrentTransformationPlane(currentPlane);
                         }
 
@@ -363,9 +476,9 @@ namespace RebarCreate
 
                         workPlane.SetCurrentTransformationPlane(localPlane);
 
-                        //CreateTopRebar(beam, dropPosition, MinX, MinZ, MaxX, MinY, MaxY, MaxZ, "13", beamOriented, beamPosition, numOfRebar2);
-                        //CreateBotRebar(beam, dropPosition, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "16", beamOriented, beamPosition, numOfRebar2);
-                        //CreateStirrup(beam, dropPosition, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "8", beamOriented, beamPosition, rebarSpacing);
+                        //CreateTopRebar(beam, dropPosition, MinX, MinZ, MaxX, MinY, MaxY, MaxZ, "13", beamOriented, beamPosition, rebarQuantity);
+                        //CreateBotRebar(beam, dropPosition, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "16", beamOriented, beamPosition, rebarQuantity);
+                        //CreateStirrup(beam, dropPosition, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "8", beamOriented, beamPosition, spacingStirrup);
 
 #warning    Reset working plan
                         workPlane.SetCurrentTransformationPlane(currentPlane);
@@ -885,7 +998,7 @@ namespace RebarCreate
             rebar.Insert();
         }
 
-        public void CreateStirrup(Beam beam, string dropPosition, double MinX, double MaxY, double MinY, double MinZ, double MaxX, double MaxZ, string radius, string beamOriented, string beamPosition, ArrayList rebarSpacing)
+        public void CreateStirrup(Beam beam, string dropPosition, double MinX, double MaxY, double MinY, double MinZ, double MaxX, double MaxZ, string radius, string beamOriented, string beamPosition, ArrayList spacingStirrup)
         {
             TSG.Point p1 = new TSG.Point(MinX, MinY, MinZ);
             TSG.Point p2 = new TSG.Point(MinX, MinY, MaxZ);
@@ -919,10 +1032,10 @@ namespace RebarCreate
                     ep = new TSG.Point(MaxX, MaxY, (MinZ + MaxZ) / 2);
                     break;
             }
-            InsertRebarInfo(sp, ep, RebarPolygon, beam, radius, "STIRRUP BAR", beamOriented, rebarSpacing, dropPosition);
+            InsertRebarInfo(sp, ep, RebarPolygon, beam, radius, "STIRRUP BAR", beamOriented, spacingStirrup, dropPosition);
         }
 
-        private void CreateStirrupDrop(Beam beam, string dropPosition, List<TSG.Point> facePointsList, string radius, string beamOriented, string beamPosition, ArrayList rebarSpacing)
+        private void CreateStirrupDrop(Beam beam, string dropPosition, List<TSG.Point> facePointsList, string radius, string beamOriented, string beamPosition, ArrayList spacingStirrup)
         {
             string rebarName = "STIRRUP BAR";
             string beamProfile = null;
@@ -1154,13 +1267,13 @@ namespace RebarCreate
                     break;
             }
 
-            InsertRebarInfo(spDrop, epDrop, RebarPolygonDrop, beam, radius, rebarName, beamOriented, rebarSpacing, dropPosition);
-            InsertRebarInfo(spMain, epMain, RebarPolygon, beam, radius, rebarName, beamOriented, rebarSpacing, dropPosition);
+            InsertRebarInfo(spDrop, epDrop, RebarPolygonDrop, beam, radius, rebarName, beamOriented, spacingStirrup, dropPosition);
+            InsertRebarInfo(spMain, epMain, RebarPolygon, beam, radius, rebarName, beamOriented, spacingStirrup, dropPosition);
         }
 
 #warning Links bar info
 
-        private static void BeamStirrupBarInfo(Beam beam, string beamOriented, double radiusDouble, RebarGroup rebar, ArrayList rebarSpacing, string dropPosition)
+        private static void BeamStirrupBarInfo(Beam beam, string beamOriented, double radiusDouble, RebarGroup rebar, ArrayList spacingStirrup, string dropPosition)
         {
             rebar.RadiusValues.Add(2 * radiusDouble);
             RebarHookData customHook = new RebarHookData() { Shape = RebarHookData.RebarHookShapeEnum.CUSTOM_HOOK, Angle = 90.0, Radius = 16.0, Length = 81.0 };
@@ -1172,7 +1285,7 @@ namespace RebarCreate
 
             rebar.SpacingType = RebarGroup.RebarGroupSpacingTypeEnum.SPACING_TYPE_TARGET_SPACE;
 
-            rebar.Spacings = rebarSpacing;
+            rebar.Spacings = spacingStirrup;
             rebar.StartPointOffsetType =
                 Reinforcement.RebarOffsetTypeEnum.OFFSET_TYPE_COVER_THICKNESS;
             rebar.EndPointOffsetType =
@@ -1288,6 +1401,26 @@ namespace RebarCreate
         private void btn_Quit_Click(object sender, EventArgs e)
         {
             Close();
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void pictureBox1_Click_1(object sender, EventArgs e)
+        {
+        }
+
+        private void comboBox5_SelectedIndexChanged(object sender, EventArgs e)
+        {
         }
     }
 }
