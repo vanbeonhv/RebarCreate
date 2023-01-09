@@ -22,6 +22,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using Tekla.Structures.ModelInternal;
 using Tekla.Structures.Solid;
 using System.Threading;
+using RebarCreate.Functions;
 
 namespace RebarCreate
 {
@@ -68,14 +69,21 @@ namespace RebarCreate
                 #endregion Get Center Point
 
                 myEnum.Reset();
-                ArrayList beamList = new ArrayList();
-                TSMUI.ModelObjectSelector partSelector = new TSMUI.ModelObjectSelector();
                 while (myEnum.MoveNext())
                 {
                     Beam beam = myEnum.Current as Beam;
                     if (beam != null)
                     {
-                        beamList.Add(beam);
+                        #region User Input
+
+                        string topBarRadius = "13";
+                        string botBarRadius = "16";
+                        string stirrupRadius = "8";
+                        ArrayList numOfRebar2 = new ArrayList() { 2.0 };
+                        ArrayList numOfRebar3 = new ArrayList() { 3.0 };
+                        ArrayList rebarSpacing = new ArrayList() { 100.0 };
+
+                        #endregion User Input
 
                         #region Workplane
 
@@ -151,11 +159,9 @@ namespace RebarCreate
                                 }
                                 break;
                         }
-                        //MessageBox.Show(beamPosition);
+                        Console.WriteLine(beamPosition);
 
                         #endregion Detect Position
-
-                        Console.WriteLine(beamPosition);
 
                         workPlane.SetCurrentTransformationPlane(localPlane);
 
@@ -169,14 +175,73 @@ namespace RebarCreate
                         double MaxX = solid.MaximumPoint.X;
                         double MaxY = solid.MaximumPoint.Y;
                         double MaxZ = solid.MaximumPoint.Z;
+                        workPlane.SetCurrentTransformationPlane(currentPlane);
+
+                        ArrayList currentBeam = new ArrayList() { beam };
+                        TSMUI.ModelObjectSelector selector = new TSMUI.ModelObjectSelector();
+                        selector.Select(currentBeam, true);
+
+                        FaceEnumerator faceEnum = solid.GetFaceEnumerator();
+                        List<TSG.Point> facePointsList = new List<TSG.Point>();
+                        while (faceEnum.MoveNext())
+                        {
+                            Face face = (Face)faceEnum.Current;
+                            switch (beamPosition)
+                            {
+                                case "right":
+                                    if (face.Normal == new Vector(1.0, 0.0, 0.0))
+                                    {
+                                        //workPlane.SetCurrentTransformationPlane(localPlane);
+                                        LoopEnumerator loopEnum = face.GetLoopEnumerator();
+                                        while (loopEnum.MoveNext())
+                                        {
+                                            Loop loop = (Loop)loopEnum.Current;
+                                            if (loop != null)
+                                            {
+                                                VertexEnumerator vertexEnum = loop.GetVertexEnumerator();
+                                                while (vertexEnum.MoveNext())
+                                                {
+                                                    TSG.Point vertex = (TSG.Point)vertexEnum.Current;
+                                                    facePointsList.Add(vertex);
+                                                    ControlPoint controlPoint = new ControlPoint(vertex);
+                                                    controlPoint.Insert();
+                                                    myModel.CommitChanges();
+                                                    Thread.Sleep(500);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    };
+                                    if (facePointsList != null)
+                                    {
+                                        PointFilter pointFilter = new PointFilter(facePointsList);
+                                        double maxZ = pointFilter.MaxZ();
+                                        double gapZAxis = facePointsList[0].Z - maxZ;
+                                        if (gapZAxis > -1 && gapZAxis < 1)
+                                        {
+                                            Console.WriteLine("true");
+                                            CreateTopRebar(beam, facePointsList, topBarRadius, beamOriented, beamPosition, numOfRebar2);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("false");
+                                    }
+                                    break;
+
+                                default:
+                                    Console.WriteLine("Default");
+                                    break;
+                            }
+                        }
 
                         #endregion Solid
 
-                        ArrayList numOfRebar2 = new ArrayList() { 2.0 };
-                        ArrayList numOfRebar3 = new ArrayList() { 3.0 };
-                        ArrayList rebarSpacing = new ArrayList() { 100.0 };
+                        workPlane.SetCurrentTransformationPlane(localPlane);
 
-                        CreateTopRebar(beam, MinX, MinZ, MaxX, MinY, MaxY, MaxZ, "13", beamOriented, beamPosition, numOfRebar2);
                         CreateBotRebar(beam, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "16", beamOriented, beamPosition, numOfRebar2);
                         CreateStirrup(beam, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "8", beamOriented, beamPosition, rebarSpacing);
 
@@ -184,8 +249,6 @@ namespace RebarCreate
                         workPlane.SetCurrentTransformationPlane(currentPlane);
                         myModel.CommitChanges();
                     }
-                    partSelector.Select(beamList);
-                    Thread.Sleep(500);
                 }
             }
             catch (Exception ex)
@@ -206,8 +269,8 @@ namespace RebarCreate
             TSG.Point centerPoint =
                 new TSG.Point(XPoint / pointList.Count, YPoint / pointList.Count);
 
-            ControlPoint controlPoint = new ControlPoint(centerPoint);
-            controlPoint.Insert();
+            //ControlPoint controlPoint = new ControlPoint(centerPoint);
+            //controlPoint.Insert();
             return centerPoint;
         }
 
@@ -231,19 +294,19 @@ namespace RebarCreate
             switch (beamPosition)
             {
                 case "top":
-                    RebarPolygonBot.Points.Add(pt1);
-                    RebarPolygonBot.Points.Add(pt2);
-                    RebarPolygonBot.Points.Add(pt3);
-                    RebarPolygonBot.Points.Add(pt4);
+                    RebarPolygonBot.Points.Add(pb1);
+                    RebarPolygonBot.Points.Add(pb2);
+                    RebarPolygonBot.Points.Add(pb3);
+                    RebarPolygonBot.Points.Add(pb4);
                     spBot = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MaxZ);
                     epBot = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MinZ);
                     break;
 
                 case "bot":
-                    RebarPolygonBot.Points.Add(pt2);
-                    RebarPolygonBot.Points.Add(pt1);
-                    RebarPolygonBot.Points.Add(pt4);
-                    RebarPolygonBot.Points.Add(pt3);
+                    RebarPolygonBot.Points.Add(pb2);
+                    RebarPolygonBot.Points.Add(pb1);
+                    RebarPolygonBot.Points.Add(pb4);
+                    RebarPolygonBot.Points.Add(pb3);
                     spBot = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MinZ);
                     epBot = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MaxZ);
                     break;
@@ -275,66 +338,71 @@ namespace RebarCreate
             #endregion Bot rebar
         }
 
-        private void CreateTopRebar(Beam beam, double MinX, double MinZ, double MaxX, double MinY, double MaxY, double MaxZ, string radius, string beamOriented, string beamPosition, ArrayList numOfRebar)
+        private void CreateTopRebar(Beam beam, List<TSG.Point> facePointsList, string radius, string beamOriented, string beamPosition, ArrayList numOfRebar)
         {
             #region Top rebar
 
             string rebarName = "TOP BAR_H" + radius;
-            TSG.Point pb1 = new TSG.Point(MinX, MinY + 46, MinZ);
-            TSG.Point pb2 = new TSG.Point(MinX, MinY + 46, MaxZ);
-            TSG.Point pb3 = new TSG.Point(MaxX, MinY + 46, MaxZ);
-            TSG.Point pb4 = new TSG.Point(MaxX, MinY + 46, MinZ);
-            //
-            TSG.Point pt1 = new TSG.Point(MinX, MaxY - 46, MinZ);
-            TSG.Point pt2 = new TSG.Point(MinX, MaxY - 46, MaxZ);
-            TSG.Point pt3 = new TSG.Point(MaxX, MaxY - 46, MaxZ);
-            TSG.Point pt4 = new TSG.Point(MaxX, MaxY - 46, MinZ);
+            string beamProfile = null;
+            beam.GetReportProperty("profile", ref beamProfile);
+            //TSG.Point pb1 = new TSG.Point(MinX, MinY + 46, MinZ);
+            //TSG.Point pb2 = new TSG.Point(MinX, MinY + 46, MaxZ);
+            //TSG.Point pb3 = new TSG.Point(MaxX, MinY + 46, MaxZ);
+            //TSG.Point pb4 = new TSG.Point(MaxX, MinY + 46, MinZ);
+            ////
+            //TSG.Point pt1 = new TSG.Point(MinX, MaxY - 46, MinZ);
+            //TSG.Point pt2 = new TSG.Point(MinX, MaxY - 46, MaxZ);
+            //TSG.Point pt3 = new TSG.Point(MaxX, MaxY - 46, MaxZ);
+            //TSG.Point pt4 = new TSG.Point(MaxX, MaxY - 46, MinZ);
 
-            TSG.Point spTop = null;
-            TSG.Point epTop = null;
+            Console.WriteLine(beamProfile);
+            //TSG.Point pb1 =
 
-            Polygon RebarPolygonTop = new Polygon();
-            switch (beamPosition)
-            {
-                case "top":
-                    RebarPolygonTop.Points.Add(pb1);
-                    RebarPolygonTop.Points.Add(pb2);
-                    RebarPolygonTop.Points.Add(pb3);
-                    RebarPolygonTop.Points.Add(pb4);
-                    spTop = new TSG.Point((MinX + MaxX) / 2, MinY + 46, MaxZ);
-                    epTop = new TSG.Point((MinX + MaxX) / 2, MinY + 46, MinZ);
-                    break;
+            //TSG.Point spTop = null;
+            //TSG.Point epTop = null;
 
-                case "bot":
-                    RebarPolygonTop.Points.Add(pb2);
-                    RebarPolygonTop.Points.Add(pb1);
-                    RebarPolygonTop.Points.Add(pb4);
-                    RebarPolygonTop.Points.Add(pb3);
-                    spTop = new TSG.Point((MinX + MaxX) / 2, MinY + 46, MinZ);
-                    epTop = new TSG.Point((MinX + MaxX) / 2, MinY + 46, MaxZ);
-                    break;
+            //Polygon RebarPolygonTop = new Polygon();
+            //switch (beamPosition)
+            //{
+            //    case "top":
+            //        RebarPolygonTop.Points.Add(pb1);
+            //        RebarPolygonTop.Points.Add(pb2);
+            //        RebarPolygonTop.Points.Add(pb3);
+            //        RebarPolygonTop.Points.Add(pb4);
+            //        spTop = new TSG.Point((MinX + MaxX) / 2, MinY + 46, MaxZ);
+            //        epTop = new TSG.Point((MinX + MaxX) / 2, MinY + 46, MinZ);
+            //        break;
 
-                case "left":
-                    RebarPolygonTop.Points.Add(pt1);
-                    RebarPolygonTop.Points.Add(pt2);
-                    RebarPolygonTop.Points.Add(pt3);
-                    RebarPolygonTop.Points.Add(pt4);
+            //    case "bot":
+            //        RebarPolygonTop.Points.Add(pb2);
+            //        RebarPolygonTop.Points.Add(pb1);
+            //        RebarPolygonTop.Points.Add(pb4);
+            //        RebarPolygonTop.Points.Add(pb3);
+            //        spTop = new TSG.Point((MinX + MaxX) / 2, MinY + 46, MinZ);
+            //        epTop = new TSG.Point((MinX + MaxX) / 2, MinY + 46, MaxZ);
+            //        break;
 
-                    spTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MaxZ);
-                    epTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MinZ);
-                    break;
+            //    case "left":
+            //        RebarPolygonTop.Points.Add(pt1);
+            //        RebarPolygonTop.Points.Add(pt2);
+            //        RebarPolygonTop.Points.Add(pt3);
+            //        RebarPolygonTop.Points.Add(pt4);
 
-                case "right":
-                    RebarPolygonTop.Points.Add(pt2);
-                    RebarPolygonTop.Points.Add(pt1);
-                    RebarPolygonTop.Points.Add(pt4);
-                    RebarPolygonTop.Points.Add(pt3);
-                    spTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MinZ);
-                    epTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MaxZ);
-                    break;
-            }
+            //        spTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MaxZ);
+            //        epTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MinZ);
+            //        break;
 
-            InsertRebarInfo(spTop, epTop, RebarPolygonTop, beam, radius, rebarName, beamOriented, numOfRebar);
+            //    case "right":
+            //        RebarPolygonTop.Points.Add(pt2);
+            //        RebarPolygonTop.Points.Add(pt1);
+            //        RebarPolygonTop.Points.Add(pt4);
+            //        RebarPolygonTop.Points.Add(pt3);
+            //        spTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MinZ);
+            //        epTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MaxZ);
+            //        break;
+            //}
+
+            //InsertRebarInfo(spTop, epTop, RebarPolygonTop, beam, radius, rebarName, beamOriented, numOfRebar);
 
             #endregion Top rebar
         }
@@ -378,7 +446,7 @@ namespace RebarCreate
             }
             else
             {
-                MessageBox.Show("Rebar name error!");
+                Console.WriteLine("Rebar name error!");
             }
 
             //if (rebar.Insert())
