@@ -12,6 +12,7 @@ using Tekla.Structures;
 using Tekla.Structures.Model;
 using Tekla.Structures.Model.UI;
 using Tekla.Structures.Geometry3d;
+using Tekla.Structures.Model.Operations;
 
 using TSM = Tekla.Structures.Model;
 using TSMUI = Tekla.Structures.Model.UI;
@@ -23,6 +24,7 @@ using Tekla.Structures.ModelInternal;
 using Tekla.Structures.Solid;
 using System.Threading;
 using RebarCreate.Functions;
+using ComboBox = System.Windows.Forms.ComboBox;
 
 namespace RebarCreate
 {
@@ -35,6 +37,56 @@ namespace RebarCreate
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            pictureBox1.Image = new Bitmap(Application.StartupPath + "\\Resources\\beams.png");
+            //input for Top Beam
+            cb_topRadiusTop.SelectedIndex = 0;
+            cb_stirrupRadiusTop.SelectedIndex = 0;
+            cb_botRadiusTop.SelectedIndex = 0;
+            cb_topQtyTop.SelectedIndex = 0;
+            cb_stirrupSpacingTop.SelectedIndex = 0;
+            cb_botQtyTop.SelectedIndex = 0;
+
+            //input for Bot Beam
+            cb_topRadiusBot.SelectedIndex = 0;
+            cb_stirrupRadiusBot.SelectedIndex = 0;
+            cb_botRadiusBot.SelectedIndex = 0;
+            cb_topQtyBot.SelectedIndex = 0;
+            cb_stirrupSpacingBot.SelectedIndex = 0;
+            cb_botQtyBot.SelectedIndex = 0;
+
+            //input for Left Beam
+            cb_topRadiusLeft.SelectedIndex = 0;
+            cb_stirrupRadiusLeft.SelectedIndex = 0;
+            cb_botRadiusLeft.SelectedIndex = 0;
+            cb_topQtyLeft.SelectedIndex = 0;
+            cb_stirrupSpacingLeft.SelectedIndex = 0;
+            cb_botQtyLeft.SelectedIndex = 0;
+
+            //input for Right Beam
+            cb_topRadiusRight.SelectedIndex = 0;
+            cb_stirrupRadiusRight.SelectedIndex = 0;
+            cb_botRadiusRight.SelectedIndex = 0;
+            cb_topQtyRight.SelectedIndex = 0;
+            cb_stirrupSpacingRight.SelectedIndex = 0;
+            cb_botQtyRight.SelectedIndex = 0;
+        }
+
+        private string GetInputText(ComboBox comboBox)
+        {
+            string itemText = comboBox.GetItemText(comboBox.SelectedItem);
+            return itemText;
+        }
+
+        private double GetInputDouble(ComboBox comboBox)
+        {
+            double itemDouble = 0.0;
+            string itemText = comboBox.GetItemText(comboBox.SelectedItem);
+            if (double.TryParse(itemText.Trim(), out itemDouble) == false)
+            {
+                itemDouble = 5.0;
+                Console.WriteLine("-Convert text input to double false");
+            }
+            return itemDouble;
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -50,6 +102,49 @@ namespace RebarCreate
                 {
                     Console.WriteLine("Fail to connect!");
                 }
+
+                #region User Input
+
+                string topBarRadiusTop = GetInputText(cb_topRadiusTop);
+                string stirrupRadiusTop = GetInputText(cb_stirrupRadiusTop);
+                string botBarRadiusTop = GetInputText(cb_botRadiusTop);
+                double topRebarQuantityTop = GetInputDouble(cb_topQtyTop);
+                double spacingStirrupTop = GetInputDouble(cb_stirrupSpacingTop);
+                double botRebarQuantityTop = GetInputDouble(cb_botQtyTop);
+
+                string topBarRadiusBot = GetInputText(cb_topRadiusBot);
+                string stirrupRadiusBot = GetInputText(cb_stirrupRadiusBot);
+                string botBarRadiusBot = GetInputText(cb_botRadiusBot);
+                double topRebarQuantityBot = GetInputDouble(cb_topQtyBot);
+                double spacingStirrupBot = GetInputDouble(cb_stirrupSpacingBot);
+                double botRebarQuantityBot = GetInputDouble(cb_botQtyBot);
+
+                string topBarRadiusLeft = GetInputText(cb_topRadiusLeft);
+                string stirrupRadiusLeft = GetInputText(cb_stirrupRadiusLeft);
+                string botBarRadiusLeft = GetInputText(cb_botRadiusLeft);
+                double topRebarQuantityLeft = GetInputDouble(cb_topQtyLeft);
+                double spacingStirrupLeft = GetInputDouble(cb_stirrupSpacingLeft);
+                double botRebarQuantityLeft = GetInputDouble(cb_botQtyLeft);
+
+                string topBarRadiusRight = GetInputText(cb_topRadiusRight);
+                string stirrupRadiusRight = GetInputText(cb_stirrupRadiusRight);
+                string botBarRadiusRight = GetInputText(cb_botRadiusRight);
+                double topRebarQuantityRight = GetInputDouble(cb_topQtyRight);
+                double spacingStirrupRight = GetInputDouble(cb_stirrupSpacingRight);
+                double botRebarQuantityRight = GetInputDouble(cb_botQtyRight);
+
+                Console.WriteLine("topBarRadius" + topBarRadiusLeft);
+
+                string topBarRadius = null;
+                string stirrupRadius = null;
+                string botBarRadius = null;
+
+                ArrayList topRebarQuantity = new ArrayList() { };
+                ArrayList botRebarQuantity = new ArrayList() { };
+                ArrayList spacingStirrup = new ArrayList() { };
+
+                #endregion User Input
+
                 Picker picker = new Picker();
                 ModelObjectEnumerator myEnum =
                     picker.PickObjects(Picker.PickObjectsEnum.PICK_N_PARTS);
@@ -74,17 +169,6 @@ namespace RebarCreate
                     Beam beam = myEnum.Current as Beam;
                     if (beam != null)
                     {
-                        #region User Input
-
-                        string topBarRadius = "13";
-                        string botBarRadius = "16";
-                        string stirrupRadius = "8";
-                        ArrayList numOfRebar2 = new ArrayList() { 2.0 };
-                        ArrayList numOfRebar3 = new ArrayList() { 3.0 };
-                        ArrayList rebarSpacing = new ArrayList() { 100.0 };
-
-                        #endregion User Input
-
                         #region Workplane
 
                         WorkPlaneHandler workPlane =
@@ -133,10 +217,22 @@ namespace RebarCreate
                                 if (beam.StartPoint.Y > centerPoint.Y)
                                 {
                                     beamPosition = "top";
+                                    topBarRadius = topBarRadiusTop;
+                                    stirrupRadius = stirrupRadiusTop;
+                                    botBarRadius = botBarRadiusTop;
+                                    topRebarQuantity.Add(topRebarQuantityTop);
+                                    spacingStirrup.Add(spacingStirrupTop);
+                                    botRebarQuantity.Add(botRebarQuantityTop);
                                 }
                                 else if (beam.StartPoint.Y < centerPoint.Y)
                                 {
                                     beamPosition = "bot";
+                                    topBarRadius = topBarRadiusBot;
+                                    stirrupRadius = stirrupRadiusBot;
+                                    botBarRadius = botBarRadiusBot;
+                                    topRebarQuantity.Add(topRebarQuantityBot);
+                                    spacingStirrup.Add(spacingStirrupBot);
+                                    botRebarQuantity.Add(botRebarQuantityBot);
                                 }
                                 else
                                 {
@@ -148,10 +244,22 @@ namespace RebarCreate
                                 if (beam.StartPoint.X > centerPoint.X)
                                 {
                                     beamPosition = "right";
+                                    topBarRadius = topBarRadiusRight;
+                                    stirrupRadius = stirrupRadiusRight;
+                                    botBarRadius = botBarRadiusRight;
+                                    topRebarQuantity.Add(topRebarQuantityRight);
+                                    spacingStirrup.Add(spacingStirrupRight);
+                                    botRebarQuantity.Add(botRebarQuantityRight);
                                 }
                                 else if (beam.StartPoint.X < centerPoint.X)
                                 {
                                     beamPosition = "left";
+                                    topBarRadius = topBarRadiusLeft;
+                                    stirrupRadius = stirrupRadiusLeft;
+                                    botBarRadius = botBarRadiusLeft;
+                                    topRebarQuantity.Add(topRebarQuantityLeft);
+                                    spacingStirrup.Add(spacingStirrupLeft);
+                                    botRebarQuantity.Add(botRebarQuantityLeft);
                                 }
                                 else
                                 {
@@ -191,7 +299,36 @@ namespace RebarCreate
                                 case "right":
                                     if (face.Normal == new Vector(1.0, 0.0, 0.0))
                                     {
-                                        //workPlane.SetCurrentTransformationPlane(localPlane);
+                                        LoopEnumerator loopEnum = face.GetLoopEnumerator();
+                                        while (loopEnum.MoveNext())
+                                        {
+                                            Loop loop = (Loop)loopEnum.Current;
+                                            if (loop != null)
+                                            {
+                                                VertexEnumerator vertexEnum = loop.GetVertexEnumerator();
+                                                while (vertexEnum.MoveNext())
+                                                {
+                                                    TSG.Point vertex = (TSG.Point)vertexEnum.Current;
+                                                    facePointsList.Add(vertex);
+                                                    //Insert Points for ez visulize
+                                                    ControlPoint controlPoint = new ControlPoint(vertex);
+                                                    controlPoint.Insert();
+                                                    myModel.CommitChanges();
+                                                    Thread.Sleep(100);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    };
+
+                                    break;
+
+                                case "left":
+                                    if (face.Normal == new Vector(-1.0, 0.0, 0.0))
+                                    {
                                         LoopEnumerator loopEnum = face.GetLoopEnumerator();
                                         while (loopEnum.MoveNext())
                                         {
@@ -206,7 +343,7 @@ namespace RebarCreate
                                                     ControlPoint controlPoint = new ControlPoint(vertex);
                                                     controlPoint.Insert();
                                                     myModel.CommitChanges();
-                                                    Thread.Sleep(500);
+                                                    Thread.Sleep(100);
                                                 }
                                             }
                                         }
@@ -215,35 +352,132 @@ namespace RebarCreate
                                     {
                                         break;
                                     };
-                                    if (facePointsList != null)
+                                    break;
+
+                                case "bot":
+                                    if (face.Normal == new Vector(0.0, -1.0, 0.0))
                                     {
-                                        PointFilter pointFilter = new PointFilter(facePointsList);
-                                        double maxZ = pointFilter.MaxZ();
-                                        double gapZAxis = facePointsList[0].Z - maxZ;
-                                        if (gapZAxis > -1 && gapZAxis < 1)
+                                        LoopEnumerator loopEnum = face.GetLoopEnumerator();
+                                        while (loopEnum.MoveNext())
                                         {
-                                            Console.WriteLine("true");
-                                            CreateTopRebar(beam, facePointsList, topBarRadius, beamOriented, beamPosition, numOfRebar2);
+                                            Loop loop = (Loop)loopEnum.Current;
+                                            if (loop != null)
+                                            {
+                                                VertexEnumerator vertexEnum = loop.GetVertexEnumerator();
+                                                while (vertexEnum.MoveNext())
+                                                {
+                                                    TSG.Point vertex = (TSG.Point)vertexEnum.Current;
+                                                    facePointsList.Add(vertex);
+                                                    ControlPoint controlPoint = new ControlPoint(vertex);
+                                                    controlPoint.Insert();
+                                                    myModel.CommitChanges();
+                                                    Thread.Sleep(100);
+                                                }
+                                            }
                                         }
+                                        Console.WriteLine(facePointsList[0]);
                                     }
                                     else
                                     {
-                                        Console.WriteLine("false");
-                                    }
+                                        break;
+                                    };
                                     break;
 
-                                default:
-                                    Console.WriteLine("Default");
+                                case "top":
+                                    if (face.Normal == new Vector(0.0, 1.0, 0.0))
+                                    {
+                                        LoopEnumerator loopEnum = face.GetLoopEnumerator();
+                                        while (loopEnum.MoveNext())
+                                        {
+                                            Loop loop = (Loop)loopEnum.Current;
+                                            if (loop != null)
+                                            {
+                                                VertexEnumerator vertexEnum = loop.GetVertexEnumerator();
+                                                while (vertexEnum.MoveNext())
+                                                {
+                                                    TSG.Point vertex = (TSG.Point)vertexEnum.Current;
+                                                    facePointsList.Add(vertex);
+                                                    ControlPoint controlPoint = new ControlPoint(vertex);
+                                                    controlPoint.Insert();
+                                                    myModel.CommitChanges();
+                                                    Thread.Sleep(100);
+                                                }
+                                            }
+                                        }
+                                        Console.WriteLine(facePointsList[0]);
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    };
                                     break;
                             }
+                        }
+                        //Check drop
+                        string dropPosition = null;
+                        if (facePointsList.Count > 4)
+                        {
+                            #region dropPosition
+
+                            PointFilter pointFilter = new PointFilter(facePointsList);
+                            //Return dropPosition
+                            if (beamPosition == "left" || beamPosition == "right")
+                            {
+                                double maxY = pointFilter.MaxY();
+                                double minY = pointFilter.MinY();
+                                //Cac part can nam trong cung 1 goc phan tu
+                                double gapToMaxY = Math.Abs(facePointsList[0].Y - maxY);
+                                double gapToMinY = Math.Abs(facePointsList[0].Y - minY);
+                                if (gapToMaxY < gapToMinY)
+                                {
+                                    dropPosition = "top";
+                                }
+                                else
+                                {
+                                    dropPosition = "bot";
+                                }
+                            }
+                            else if (beamPosition == "top" || beamPosition == "bot")
+                            {
+                                double maxX = pointFilter.MaxX();
+                                double minX = pointFilter.MinX();
+                                double gapToMaxX = Math.Abs(facePointsList[0].X - maxX);
+                                double gapToMinX = Math.Abs(facePointsList[0].X - minX);
+                                if (gapToMaxX < gapToMinX)
+                                {
+                                    dropPosition = "right";
+                                }
+                                else
+                                {
+                                    dropPosition = "left";
+                                }
+                            }
+
+                            #endregion dropPosition
+
+                            Console.WriteLine(dropPosition);
+                            CreateTopRebar(beam, dropPosition, facePointsList, topBarRadius, beamOriented, beamPosition, topRebarQuantity);
+                            CreateStirrupDrop(beam, dropPosition, facePointsList, stirrupRadius, beamOriented, beamPosition, spacingStirrup);
+                            workPlane.SetCurrentTransformationPlane(localPlane);
+                            CreateBotRebar(beam, dropPosition, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, botBarRadius, beamOriented, beamPosition, botRebarQuantity);
+                            workPlane.SetCurrentTransformationPlane(currentPlane);
+                        }
+                        else
+                        {
+                            workPlane.SetCurrentTransformationPlane(localPlane);
+                            CreateTopRebar(beam, dropPosition, MinX, MinZ, MaxX, MinY, MaxY, MaxZ, topBarRadius, beamOriented, beamPosition, topRebarQuantity);
+                            //CreateBotRebar(beam, dropPosition, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, botBarRadius, beamOriented, beamPosition, botRebarQuantity);
+                            CreateStirrup(beam, dropPosition, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, stirrupRadius, beamOriented, beamPosition, spacingStirrup);
+                            workPlane.SetCurrentTransformationPlane(currentPlane);
                         }
 
                         #endregion Solid
 
                         workPlane.SetCurrentTransformationPlane(localPlane);
 
-                        CreateBotRebar(beam, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "16", beamOriented, beamPosition, numOfRebar2);
-                        CreateStirrup(beam, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "8", beamOriented, beamPosition, rebarSpacing);
+                        //CreateTopRebar(beam, dropPosition, MinX, MinZ, MaxX, MinY, MaxY, MaxZ, "13", beamOriented, beamPosition, rebarQuantity);
+                        //CreateBotRebar(beam, dropPosition, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "16", beamOriented, beamPosition, rebarQuantity);
+                        //CreateStirrup(beam, dropPosition, MinX, MaxY, MinY, MinZ, MaxX, MaxZ, "8", beamOriented, beamPosition, spacingStirrup);
 
 #warning    Reset working plan
                         workPlane.SetCurrentTransformationPlane(currentPlane);
@@ -253,7 +487,7 @@ namespace RebarCreate
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                Console.WriteLine(ex.ToString());
             }
         }
 
@@ -274,7 +508,7 @@ namespace RebarCreate
             return centerPoint;
         }
 
-        private void CreateBotRebar(Beam beam, double MinX, double MaxY, double MinY, double MinZ, double MaxX, double MaxZ, string radius, string beamOriented, string beamPosition, ArrayList numOfRebar)
+        private void CreateBotRebar(Beam beam, string dropPosition, double MinX, double MaxY, double MinY, double MinZ, double MaxX, double MaxZ, string radius, string beamOriented, string beamPosition, ArrayList numOfRebar)
         {
             #region Bot rebar
 
@@ -293,7 +527,7 @@ namespace RebarCreate
             TSG.Point epBot = null;
             switch (beamPosition)
             {
-                case "top":
+                case "bot":
                     RebarPolygonBot.Points.Add(pb1);
                     RebarPolygonBot.Points.Add(pb2);
                     RebarPolygonBot.Points.Add(pb3);
@@ -302,7 +536,7 @@ namespace RebarCreate
                     epBot = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MinZ);
                     break;
 
-                case "bot":
+                case "top":
                     RebarPolygonBot.Points.Add(pb2);
                     RebarPolygonBot.Points.Add(pb1);
                     RebarPolygonBot.Points.Add(pb4);
@@ -311,7 +545,7 @@ namespace RebarCreate
                     epBot = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MaxZ);
                     break;
 
-                case "left":
+                case "right":
                     RebarPolygonBot.Points.Add(pb1);
                     RebarPolygonBot.Points.Add(pb2);
                     RebarPolygonBot.Points.Add(pb3);
@@ -320,7 +554,7 @@ namespace RebarCreate
                     epBot = new TSG.Point((MinX + MaxX) / 2, MinY + 46, MinZ);
                     break;
 
-                case "right":
+                case "left":
                     RebarPolygonBot.Points.Add(pb2);
                     RebarPolygonBot.Points.Add(pb1);
                     RebarPolygonBot.Points.Add(pb4);
@@ -333,78 +567,243 @@ namespace RebarCreate
                     break;
             }
 
-            InsertRebarInfo(spBot, epBot, RebarPolygonBot, beam, radius, "BOT BAR", beamOriented, numOfRebar);
+            InsertRebarInfo(spBot, epBot, RebarPolygonBot, beam, radius, "BOT BAR", beamOriented, numOfRebar, dropPosition);
 
             #endregion Bot rebar
         }
 
-        private void CreateTopRebar(Beam beam, List<TSG.Point> facePointsList, string radius, string beamOriented, string beamPosition, ArrayList numOfRebar)
+        private void CreateTopRebar(Beam beam, string dropPosition, List<TSG.Point> facePointsList, string radius, string beamOriented, string beamPosition, ArrayList numOfRebar)
         {
             #region Top rebar
 
             string rebarName = "TOP BAR_H" + radius;
             string beamProfile = null;
-            beam.GetReportProperty("profile", ref beamProfile);
-            //TSG.Point pb1 = new TSG.Point(MinX, MinY + 46, MinZ);
-            //TSG.Point pb2 = new TSG.Point(MinX, MinY + 46, MaxZ);
-            //TSG.Point pb3 = new TSG.Point(MaxX, MinY + 46, MaxZ);
-            //TSG.Point pb4 = new TSG.Point(MaxX, MinY + 46, MinZ);
-            ////
-            //TSG.Point pt1 = new TSG.Point(MinX, MaxY - 46, MinZ);
-            //TSG.Point pt2 = new TSG.Point(MinX, MaxY - 46, MaxZ);
-            //TSG.Point pt3 = new TSG.Point(MaxX, MaxY - 46, MaxZ);
-            //TSG.Point pt4 = new TSG.Point(MaxX, MaxY - 46, MinZ);
+            beam.GetReportProperty("PROFILE", ref beamProfile);
+            double beamWidth = Convert.ToDouble(beamProfile.Substring(0, beamProfile.IndexOf("x")));
+            Polygon RebarPolygonTop = new Polygon();
+            double dropDepth;
+            TSG.Point p1 = null;
+            TSG.Point p2 = null;
+            TSG.Point p3 = null;
+            TSG.Point p4 = null;
 
-            Console.WriteLine(beamProfile);
-            //TSG.Point pb1 =
+            TSG.Point FPL0 = facePointsList[0];
+            TSG.Point FPL1 = facePointsList[1];
+            TSG.Point FPL2 = facePointsList[2];
+            TSG.Point FPL3 = facePointsList[3];
+            TSG.Point FPL4 = facePointsList[4];
+            TSG.Point FPL5 = facePointsList[5];
 
-            //TSG.Point spTop = null;
-            //TSG.Point epTop = null;
+            TSG.Point spTop = null;
+            TSG.Point epTop = null;
+            switch ((beamPosition))
+            {
+                case "right" when dropPosition == "top":
+                    dropDepth = Math.Abs(FPL5.Z - FPL0.Z);
+                    p1 = new TSG.Point(FPL4.X - beamWidth, FPL4.Y, FPL4.Z);
+                    p2 = new TSG.Point(FPL5.X, FPL5.Y - 50.0 - dropDepth * 3, FPL5.Z);
+                    p3 = new TSG.Point(FPL0.X, FPL0.Y - 50.0, FPL0.Z);
+                    p4 = new TSG.Point(FPL1.X - beamWidth, FPL1.Y, FPL1.Z);
+                    RebarPolygonTop.Points.Add(p1);
+                    RebarPolygonTop.Points.Add(FPL4);
+                    RebarPolygonTop.Points.Add(p2);
+                    RebarPolygonTop.Points.Add(p3);
+                    RebarPolygonTop.Points.Add(FPL1);
+                    RebarPolygonTop.Points.Add(p4);
+                    spTop = new TSG.Point(FPL4.X, (FPL4.Y + FPL1.Y) / 2, FPL4.Z);
+                    epTop = new TSG.Point(FPL4.X - beamWidth, (FPL4.Y + FPL1.Y) / 2, FPL4.Z);
+                    break;
 
-            //Polygon RebarPolygonTop = new Polygon();
-            //switch (beamPosition)
-            //{
-            //    case "top":
-            //        RebarPolygonTop.Points.Add(pb1);
-            //        RebarPolygonTop.Points.Add(pb2);
-            //        RebarPolygonTop.Points.Add(pb3);
-            //        RebarPolygonTop.Points.Add(pb4);
-            //        spTop = new TSG.Point((MinX + MaxX) / 2, MinY + 46, MaxZ);
-            //        epTop = new TSG.Point((MinX + MaxX) / 2, MinY + 46, MinZ);
-            //        break;
+                case "right" when dropPosition == "bot":
+                    dropDepth = Math.Abs(FPL1.Z - FPL0.Z);
+                    p1 = new TSG.Point(FPL5.X - beamWidth, FPL5.Y, FPL5.Z);
+                    p2 = new TSG.Point(FPL0.X, FPL0.Y + 50.0, FPL0.Z);
+                    p3 = new TSG.Point(FPL1.X, FPL1.Y + 50.0 + dropDepth * 3, FPL1.Z);
+                    p4 = new TSG.Point(FPL2.X - beamWidth, FPL2.Y, FPL2.Z);
 
-            //    case "bot":
-            //        RebarPolygonTop.Points.Add(pb2);
-            //        RebarPolygonTop.Points.Add(pb1);
-            //        RebarPolygonTop.Points.Add(pb4);
-            //        RebarPolygonTop.Points.Add(pb3);
-            //        spTop = new TSG.Point((MinX + MaxX) / 2, MinY + 46, MinZ);
-            //        epTop = new TSG.Point((MinX + MaxX) / 2, MinY + 46, MaxZ);
-            //        break;
+                    RebarPolygonTop.Points.Add(p4);
+                    RebarPolygonTop.Points.Add(FPL2);
+                    RebarPolygonTop.Points.Add(p3);
+                    RebarPolygonTop.Points.Add(p2);
+                    RebarPolygonTop.Points.Add(FPL5);
+                    RebarPolygonTop.Points.Add(p1);
+                    spTop = new TSG.Point(FPL2.X, (FPL2.Y + FPL5.Y) / 2, FPL2.Z);
+                    epTop = new TSG.Point(FPL2.X - beamWidth, (FPL2.Y + FPL5.Y) / 2, FPL2.Z);
+                    break;
 
-            //    case "left":
-            //        RebarPolygonTop.Points.Add(pt1);
-            //        RebarPolygonTop.Points.Add(pt2);
-            //        RebarPolygonTop.Points.Add(pt3);
-            //        RebarPolygonTop.Points.Add(pt4);
+                case "left" when dropPosition == "top":
+                    dropDepth = Math.Abs(FPL2.Z - FPL1.Z);
+                    p1 = new TSG.Point(FPL0.X + beamWidth, FPL0.Y, FPL0.Z);
+                    p2 = new TSG.Point(FPL1.X, FPL1.Y - 50.0, FPL1.Z);
+                    p3 = new TSG.Point(FPL2.X, FPL2.Y - 50.0 - dropDepth * 3, FPL2.Z);
+                    p4 = new TSG.Point(FPL3.X + beamWidth, FPL3.Y, FPL3.Z);
 
-            //        spTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MaxZ);
-            //        epTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MinZ);
-            //        break;
+                    RebarPolygonTop.Points.Add(p4);
+                    RebarPolygonTop.Points.Add(FPL3);
+                    RebarPolygonTop.Points.Add(p3);
+                    RebarPolygonTop.Points.Add(p2);
+                    RebarPolygonTop.Points.Add(FPL0);
+                    RebarPolygonTop.Points.Add(p1);
+                    spTop = new TSG.Point(FPL3.X, (FPL0.Y + FPL3.Y) / 2, FPL3.Z);
+                    epTop = new TSG.Point(FPL3.X + beamWidth, (FPL0.Y + FPL3.Y) / 2, FPL3.Z);
+                    break;
 
-            //    case "right":
-            //        RebarPolygonTop.Points.Add(pt2);
-            //        RebarPolygonTop.Points.Add(pt1);
-            //        RebarPolygonTop.Points.Add(pt4);
-            //        RebarPolygonTop.Points.Add(pt3);
-            //        spTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MinZ);
-            //        epTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MaxZ);
-            //        break;
-            //}
+                case "left" when dropPosition == "bot":
+                    dropDepth = Math.Abs(FPL0.Z - FPL1.Z);
+                    p1 = new TSG.Point(FPL5.X + beamWidth, FPL5.Y, FPL5.Z);
+                    p2 = new TSG.Point(FPL0.X, FPL0.Y + 50.0 + dropDepth * 3, FPL0.Z);
+                    p3 = new TSG.Point(FPL1.X, FPL1.Y + 50.0, FPL1.Z);
+                    p4 = new TSG.Point(FPL2.X + beamWidth, FPL2.Y, FPL2.Z);
 
-            //InsertRebarInfo(spTop, epTop, RebarPolygonTop, beam, radius, rebarName, beamOriented, numOfRebar);
+                    RebarPolygonTop.Points.Add(p1);
+                    RebarPolygonTop.Points.Add(FPL5);
+                    RebarPolygonTop.Points.Add(p2);
+                    RebarPolygonTop.Points.Add(p3);
+                    RebarPolygonTop.Points.Add(FPL2);
+                    RebarPolygonTop.Points.Add(p4);
+                    spTop = new TSG.Point(FPL5.X, (FPL2.Y + FPL5.Y) / 2, FPL5.Z);
+                    epTop = new TSG.Point(FPL5.X + beamWidth, (FPL2.Y + FPL5.Y) / 2, FPL5.Z);
+                    break;
+
+                case "bot" when dropPosition == "left":
+                    dropDepth = Math.Abs(FPL2.Z - FPL1.Z);
+                    p1 = new TSG.Point(FPL3.X, FPL3.Y + beamWidth, FPL3.Z);
+                    p2 = new TSG.Point(FPL2.X + 50.0 + dropDepth * 3, FPL2.Y, FPL2.Z);
+                    p3 = new TSG.Point(FPL1.X + 50.0, FPL1.Y, FPL1.Z);
+                    p4 = new TSG.Point(FPL0.X, FPL0.Y + beamWidth, FPL0.Z);
+
+                    spTop = new TSG.Point((FPL0.X + FPL3.X) / 2, FPL3.Y, FPL3.Z);
+                    epTop = new TSG.Point((FPL0.X + FPL3.X) / 2, FPL3.Y + beamWidth, FPL3.Z);
+
+                    RebarPolygonTop.Points.Add(p1);
+                    RebarPolygonTop.Points.Add(FPL3);
+                    RebarPolygonTop.Points.Add(p2);
+                    RebarPolygonTop.Points.Add(p3);
+                    RebarPolygonTop.Points.Add(FPL0);
+                    RebarPolygonTop.Points.Add(p4);
+
+                    break;
+
+                case "bot" when dropPosition == "right":
+                    dropDepth = Math.Abs(FPL5.Z - FPL0.Z);
+                    p1 = new TSG.Point(FPL4.X, FPL4.Y + beamWidth, FPL4.Z);
+                    p2 = new TSG.Point(FPL5.X - 50.0 - dropDepth * 3, FPL5.Y, FPL5.Z);
+                    p3 = new TSG.Point(FPL0.X - 50.0, FPL0.Y, FPL0.Z);
+                    p4 = new TSG.Point(FPL1.X, FPL1.Y + beamWidth, FPL1.Z);
+
+                    RebarPolygonTop.Points.Add(p4);
+                    RebarPolygonTop.Points.Add(FPL1);
+                    RebarPolygonTop.Points.Add(p3);
+                    RebarPolygonTop.Points.Add(p2);
+                    RebarPolygonTop.Points.Add(FPL4);
+                    RebarPolygonTop.Points.Add(p1);
+
+                    spTop = new TSG.Point((FPL1.X + FPL4.X) / 2, FPL4.Y, FPL4.Z);
+                    epTop = new TSG.Point((FPL1.X + FPL4.X) / 2, FPL4.Y + beamWidth, FPL4.Z);
+
+                    break;
+
+                case "top" when dropPosition == "left":
+                    dropDepth = Math.Abs(FPL0.Z - FPL1.Z);
+                    p1 = new TSG.Point(FPL5.X, FPL5.Y - beamWidth, FPL5.Z);
+                    p2 = new TSG.Point(FPL0.X + 50.0 + dropDepth * 3, FPL0.Y, FPL0.Z);
+                    p3 = new TSG.Point(FPL1.X + 50.0, FPL1.Y, FPL1.Z);
+                    p4 = new TSG.Point(FPL2.X, FPL2.Y - beamWidth, FPL2.Z);
+
+                    RebarPolygonTop.Points.Add(p1);
+                    RebarPolygonTop.Points.Add(FPL5);
+                    RebarPolygonTop.Points.Add(p2);
+                    RebarPolygonTop.Points.Add(p3);
+                    RebarPolygonTop.Points.Add(FPL2);
+                    RebarPolygonTop.Points.Add(p4);
+
+                    spTop = new TSG.Point((FPL2.X + FPL5.X) / 2, FPL5.Y, FPL5.Z);
+                    epTop = new TSG.Point((FPL2.X + FPL5.X) / 2, FPL5.Y - beamWidth, FPL5.Z);
+
+                    break;
+
+                case "top" when dropPosition == "right":
+                    dropDepth = Math.Abs(FPL2.Z - FPL1.Z);
+                    p1 = new TSG.Point(FPL3.X, FPL3.Y - beamWidth, FPL3.Z);
+                    p2 = new TSG.Point(FPL2.X - 50.0 - dropDepth * 3, FPL2.Y, FPL2.Z);
+                    p3 = new TSG.Point(FPL1.X - 50.0, FPL1.Y, FPL1.Z);
+                    p4 = new TSG.Point(FPL0.X, FPL0.Y - beamWidth, FPL0.Z);
+#warning Tekla draw rebar loi
+                    RebarPolygonTop.Points.Add(p1);
+                    RebarPolygonTop.Points.Add(FPL3);
+                    RebarPolygonTop.Points.Add(p2);
+                    RebarPolygonTop.Points.Add(p3);
+                    RebarPolygonTop.Points.Add(FPL0);
+                    RebarPolygonTop.Points.Add(p4);
+
+                    spTop = new TSG.Point((FPL0.X + FPL3.X) / 2, FPL3.Y, FPL3.Z);
+                    epTop = new TSG.Point((FPL0.X + FPL3.X) / 2, FPL3.Y - beamWidth, FPL3.Z);
+
+                    break;
+            }
+
+            InsertRebarInfo(spTop, epTop, RebarPolygonTop, beam, radius, rebarName, beamOriented, numOfRebar, dropPosition);
 
             #endregion Top rebar
+        }
+
+        private void CreateTopRebar(Beam beam, string dropPosition, double MinX, double MinZ, double MaxX, double MinY, double MaxY, double MaxZ, string radius, string beamOriented, string beamPosition, ArrayList numOfRebar)
+        {
+            #region Top rebar first
+
+            TSG.Point pb1 = new TSG.Point(MinX, MinY + 46, MinZ);
+            TSG.Point pb2 = new TSG.Point(MinX, MinY + 46, MaxZ);
+            TSG.Point pb3 = new TSG.Point(MaxX, MinY + 46, MaxZ);
+            TSG.Point pb4 = new TSG.Point(MaxX, MinY + 46, MinZ);
+            //
+            TSG.Point pt1 = new TSG.Point(MinX, MaxY - 46, MinZ);
+            TSG.Point pt2 = new TSG.Point(MinX, MaxY - 46, MaxZ);
+            TSG.Point pt3 = new TSG.Point(MaxX, MaxY - 46, MaxZ);
+            TSG.Point pt4 = new TSG.Point(MaxX, MaxY - 46, MinZ);
+            TSG.Point spTop = null;
+            TSG.Point epTop = null;
+            Polygon RebarPolygonTop = new Polygon();
+            switch (beamPosition)
+            {
+                case "top":
+                    RebarPolygonTop.Points.Add(pt2);
+                    RebarPolygonTop.Points.Add(pt1);
+                    RebarPolygonTop.Points.Add(pt4);
+                    RebarPolygonTop.Points.Add(pt3);
+                    spTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MinZ);
+                    epTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MaxZ);
+                    break;
+
+                case "bot":
+                    RebarPolygonTop.Points.Add(pb1);
+                    RebarPolygonTop.Points.Add(pb2);
+                    RebarPolygonTop.Points.Add(pb3);
+                    RebarPolygonTop.Points.Add(pb4);
+                    spTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MaxZ);
+                    epTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MinZ);
+                    break;
+
+                case "right":
+                    RebarPolygonTop.Points.Add(pt1);
+                    RebarPolygonTop.Points.Add(pt2);
+                    RebarPolygonTop.Points.Add(pt3);
+                    RebarPolygonTop.Points.Add(pt4);
+                    spTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MaxZ);
+                    epTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MinZ);
+                    break;
+
+                case "left":
+                    RebarPolygonTop.Points.Add(pt2);
+                    RebarPolygonTop.Points.Add(pt1);
+                    RebarPolygonTop.Points.Add(pt4);
+                    RebarPolygonTop.Points.Add(pt3);
+                    spTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MinZ);
+                    epTop = new TSG.Point((MinX + MaxX) / 2, MaxY - 46, MaxZ);
+                    break;
+            }
+            InsertRebarInfo(spTop, epTop, RebarPolygonTop, beam, radius, "TOP BAR", beamOriented, numOfRebar, dropPosition);
+
+            #endregion Top rebar first
         }
 
         public void CreateCol(TSG.Point sp, TSG.Point ep)
@@ -422,7 +821,7 @@ namespace RebarCreate
             }
         }
 
-        public void InsertRebarInfo(TSG.Point sp, TSG.Point ep, Polygon RebarPolygon, Beam beam, string radius, string rebarName, string beamOriented, ArrayList numOrSpacingOfRebar)
+        public void InsertRebarInfo(TSG.Point sp, TSG.Point ep, Polygon RebarPolygon, Beam beam, string radius, string rebarName, string beamOriented, ArrayList numOrSpacingOfRebar, string dropPosition)
         {
             double radiusDouble = Convert.ToDouble(radius);
             RebarGroup rebar = new RebarGroup()
@@ -434,25 +833,108 @@ namespace RebarCreate
                 Class = 2,
                 Size = radius,
             };
-
             rebar.Polygons.Add(RebarPolygon);
-            if (rebarName.Contains("TOP BAR") || rebarName.Contains("BOT BAR"))
+
+            if (dropPosition == null)
             {
-                BeamMainbarInfo(beam, beamOriented, radiusDouble, rebar, numOrSpacingOfRebar);
+                if (rebarName.Contains("TOP BAR") || rebarName.Contains("BOT BAR"))
+                {
+                    BeamMainbarInfo(beam, beamOriented, radiusDouble, rebar, numOrSpacingOfRebar);
+                }
+                else if (rebarName.Contains("STIRRUP BAR"))
+                {
+                    BeamStirrupBarInfo(beam, beamOriented, radiusDouble, rebar, numOrSpacingOfRebar, dropPosition);
+                }
+                else
+                {
+                    Console.WriteLine("Rebar name error!");
+                }
             }
-            else if (rebarName.Contains("STIRRUP BAR"))
+            else if (dropPosition != null)
             {
-                BeamStirrupBarInfo(beam, beamOriented, radiusDouble, rebar, numOrSpacingOfRebar);
-            }
-            else
-            {
-                Console.WriteLine("Rebar name error!");
+                if (rebarName.Contains("TOP BAR"))
+                {
+                    TopBarInfo(beam, beamOriented, radiusDouble, rebar, numOrSpacingOfRebar);
+                }
+                else if (rebarName.Contains("BOT BAR"))
+                {
+                    BeamMainbarInfo(beam, beamOriented, radiusDouble, rebar, numOrSpacingOfRebar);
+                }
+                else if (rebarName.Contains("STIRRUP BAR"))
+                {
+                    BeamStirrupBarInfo(beam, beamOriented, radiusDouble, rebar, numOrSpacingOfRebar, dropPosition);
+                }
+                else
+                {
+                    Console.WriteLine("Rebar name error!");
+                }
             }
 
             //if (rebar.Insert())
             //{
             //    MessageBox.Show("Success!");
             //}
+        }
+
+        private static void TopBarInfo(Beam beam, string beamOriented, double radiusDouble, RebarGroup rebar, ArrayList numOfRebar)
+        {
+            rebar.RadiusValues.Add(2 * radiusDouble);
+            rebar.StartHook.Shape = RebarHookData.RebarHookShapeEnum.NO_HOOK;
+            rebar.EndHook.Shape = RebarHookData.RebarHookShapeEnum.NO_HOOK;
+
+            rebar.SpacingType = RebarGroup.RebarGroupSpacingTypeEnum.SPACING_TYPE_EXACT_NUMBER;
+
+            rebar.Spacings = numOfRebar;
+            rebar.StartPointOffsetType =
+                Reinforcement.RebarOffsetTypeEnum.OFFSET_TYPE_LEG_LENGTH;
+            rebar.EndPointOffsetType =
+                Reinforcement.RebarOffsetTypeEnum.OFFSET_TYPE_LEG_LENGTH;
+            if (radiusDouble == 16.0)
+            {
+                rebar.StartPointOffsetValue = 390;
+                rebar.EndPointOffsetValue = 390;
+            }
+            else if (radiusDouble == 13.0)
+            {
+                rebar.StartPointOffsetValue = 285;
+                rebar.EndPointOffsetValue = 285;
+            }
+
+            //PlanOffsets
+#warning Can check lai cong thuc
+            ArrayList onPlanOffsets = null;
+            if (beamOriented == "hor")
+            {
+                onPlanOffsets = new ArrayList
+            {
+                (200 - 38 - radiusDouble) * -1,
+                0.0, 0.0, 0.0,
+                (200 - 38 - radiusDouble) * -1
+            };
+            }
+            else if (beamOriented == "ver")
+            {
+                onPlanOffsets = new ArrayList
+            {
+                (38 + radiusDouble),
+                0.0, 0.0, 0.0,
+                (38 + radiusDouble)
+            };
+            };
+            if (onPlanOffsets == null)
+            {
+                MessageBox.Show("false");
+            }
+            rebar.OnPlaneOffsets = onPlanOffsets;
+
+            rebar.ExcludeType = RebarGroup.ExcludeTypeEnum.EXCLUDE_TYPE_NONE;
+            rebar.Father = beam;
+
+            //Check if need radius or not??? Could be only 38/28
+            rebar.StartFromPlaneOffset = 28 + radiusDouble / 2;
+            rebar.EndFromPlaneOffset = 38 + radiusDouble / 2;
+            rebar.Insert();
+            TSM.Operations.Operation.MoveObject(rebar, new Vector(0, 0, -(39 + radiusDouble)));
         }
 
         private static void BeamMainbarInfo(Beam beam, string beamOriented, double radiusDouble, RebarGroup rebar, ArrayList numOfRebar)
@@ -515,7 +997,7 @@ namespace RebarCreate
             rebar.Insert();
         }
 
-        public void CreateStirrup(Beam beam, double MinX, double MaxY, double MinY, double MinZ, double MaxX, double MaxZ, string radius, string beamOriented, string beamPosition, ArrayList rebarSpacing)
+        public void CreateStirrup(Beam beam, string dropPosition, double MinX, double MaxY, double MinY, double MinZ, double MaxX, double MaxZ, string radius, string beamOriented, string beamPosition, ArrayList spacingStirrup)
         {
             TSG.Point p1 = new TSG.Point(MinX, MinY, MinZ);
             TSG.Point p2 = new TSG.Point(MinX, MinY, MaxZ);
@@ -549,12 +1031,248 @@ namespace RebarCreate
                     ep = new TSG.Point(MaxX, MaxY, (MinZ + MaxZ) / 2);
                     break;
             }
-            InsertRebarInfo(sp, ep, RebarPolygon, beam, radius, "STIRRUP BAR", beamOriented, rebarSpacing);
+            InsertRebarInfo(sp, ep, RebarPolygon, beam, radius, "STIRRUP BAR", beamOriented, spacingStirrup, dropPosition);
+        }
+
+        private void CreateStirrupDrop(Beam beam, string dropPosition, List<TSG.Point> facePointsList, string radius, string beamOriented, string beamPosition, ArrayList spacingStirrup)
+        {
+            string rebarName = "STIRRUP BAR";
+            string beamProfile = null;
+            beam.GetReportProperty("PROFILE", ref beamProfile);
+            double beamWidth = Convert.ToDouble(beamProfile.Substring(0, beamProfile.IndexOf("x")));
+            Polygon RebarPolygon = new Polygon();
+            Polygon RebarPolygonDrop = new Polygon();
+            double dropDepth;
+            TSG.Point p1 = null;
+            TSG.Point p2 = null;
+            TSG.Point p3 = null;
+            TSG.Point p4 = null;
+
+            TSG.Point FPL0 = facePointsList[0];
+            TSG.Point FPL1 = facePointsList[1];
+            TSG.Point FPL2 = facePointsList[2];
+            TSG.Point FPL3 = facePointsList[3];
+            TSG.Point FPL4 = facePointsList[4];
+            TSG.Point FPL5 = facePointsList[5];
+
+            TSG.Point spDrop = null;
+            TSG.Point epDrop = null;
+            TSG.Point spMain = null;
+            TSG.Point epMain = null;
+            switch ((beamPosition))
+            {
+                case "right" when dropPosition == "top":
+                    //dropDepth = Math.Abs(FPL5.Z - FPL0.Z);
+                    p1 = new TSG.Point(FPL2.X - beamWidth, FPL2.Y, FPL2.Z);
+                    p2 = new TSG.Point(FPL1.X - beamWidth, FPL1.Y, FPL1.Z);
+                    RebarPolygonDrop.Points.Add(FPL1);
+                    RebarPolygonDrop.Points.Add(FPL2);
+                    RebarPolygonDrop.Points.Add(p1);
+                    RebarPolygonDrop.Points.Add(p2);
+                    RebarPolygonDrop.Points.Add(FPL1);
+
+                    spDrop = new TSG.Point((FPL1.X + p1.X) / 2, FPL1.Y - 200.0, FPL1.Z);
+                    epDrop = new TSG.Point((FPL1.X + p1.X) / 2, FPL0.Y, FPL0.Z);
+                    //--------------------
+                    p3 = new TSG.Point(FPL3.X - beamWidth, FPL3.Y, FPL3.Z);
+                    p4 = new TSG.Point(FPL4.X - beamWidth, FPL4.Y, FPL4.Z);
+                    RebarPolygon.Points.Add(FPL4);
+                    RebarPolygon.Points.Add(FPL3);
+                    RebarPolygon.Points.Add(p3);
+                    RebarPolygon.Points.Add(p4);
+                    RebarPolygon.Points.Add(FPL4);
+
+                    spMain = new TSG.Point((FPL4.X + p3.X) / 2, FPL4.Y + 200.0, FPL4.Z);
+                    epMain = new TSG.Point((FPL4.X + p3.X) / 2, FPL5.Y, FPL5.Z);
+                    break;
+
+                case "right" when dropPosition == "bot":
+                    //dropDepth = Math.Abs(FPL1.Z - FPL0.Z);
+                    p1 = new TSG.Point(FPL4.X - beamWidth, FPL4.Y, FPL4.Z);
+                    p2 = new TSG.Point(FPL5.X - beamWidth, FPL5.Y, FPL5.Z);
+                    RebarPolygonDrop.Points.Add(FPL5);
+                    RebarPolygonDrop.Points.Add(FPL4);
+                    RebarPolygonDrop.Points.Add(p1);
+                    RebarPolygonDrop.Points.Add(p2);
+                    RebarPolygonDrop.Points.Add(FPL5);
+
+                    spDrop = new TSG.Point((FPL5.X + p2.X) / 2, FPL5.Y + 200.0, FPL5.Z);
+                    epDrop = new TSG.Point((FPL0.X + p2.X) / 2, FPL0.Y, FPL0.Z);
+                    //--------------------
+                    p3 = new TSG.Point(FPL3.X - beamWidth, FPL3.Y, FPL3.Z);
+                    p4 = new TSG.Point(FPL2.X - beamWidth, FPL2.Y, FPL2.Z);
+                    RebarPolygon.Points.Add(FPL2);
+                    RebarPolygon.Points.Add(FPL3);
+                    RebarPolygon.Points.Add(p3);
+                    RebarPolygon.Points.Add(p4);
+                    RebarPolygon.Points.Add(FPL2);
+
+                    spMain = new TSG.Point((FPL2.X + p4.X) / 2, FPL2.Y - 200.0, FPL2.Z);
+                    epMain = new TSG.Point((FPL2.X + p4.X) / 2, FPL1.Y, FPL1.Z);
+                    break;
+
+                case "left" when dropPosition == "top":
+                    //dropDepth = Math.Abs(FPL2.Z - FPL1.Z);
+                    p1 = new TSG.Point(FPL0.X + beamWidth, FPL0.Y, FPL0.Z);
+                    p2 = new TSG.Point(FPL5.X + beamWidth, FPL5.Y, FPL5.Z);
+                    RebarPolygonDrop.Points.Add(FPL0);
+                    RebarPolygonDrop.Points.Add(p1);
+                    RebarPolygonDrop.Points.Add(p2);
+                    RebarPolygonDrop.Points.Add(FPL5);
+                    RebarPolygonDrop.Points.Add(FPL0);
+
+                    spDrop = new TSG.Point((FPL0.X + p1.X) / 2, FPL0.Y - 200.0, FPL0.Z);
+                    epDrop = new TSG.Point((FPL0.X + p1.X) / 2, FPL1.Y, FPL1.Z);
+                    //--------------------
+                    p3 = new TSG.Point(FPL3.X + beamWidth, FPL3.Y, FPL3.Z);
+                    p4 = new TSG.Point(FPL4.X + beamWidth, FPL4.Y, FPL4.Z);
+                    RebarPolygon.Points.Add(FPL3);
+                    RebarPolygon.Points.Add(p3);
+                    RebarPolygon.Points.Add(p4);
+                    RebarPolygon.Points.Add(FPL4);
+                    RebarPolygon.Points.Add(FPL3);
+
+                    spMain = new TSG.Point((FPL3.X + p3.X) / 2, FPL3.Y + 200.0, FPL3.Z);
+                    epMain = new TSG.Point((FPL3.X + p3.X) / 2, FPL2.Y, FPL2.Z);
+                    break;
+
+                case "left" when dropPosition == "bot":
+                    //dropDepth = Math.Abs(FPL0.Z - FPL1.Z);
+                    p1 = new TSG.Point(FPL2.X + beamWidth, FPL2.Y, FPL2.Z);
+                    p2 = new TSG.Point(FPL3.X + beamWidth, FPL3.Y, FPL3.Z);
+                    RebarPolygonDrop.Points.Add(FPL2);
+                    RebarPolygonDrop.Points.Add(p1);
+                    RebarPolygonDrop.Points.Add(p2);
+                    RebarPolygonDrop.Points.Add(FPL3);
+                    RebarPolygonDrop.Points.Add(FPL2);
+
+                    spDrop = new TSG.Point((FPL2.X + p1.X) / 2, FPL2.Y + 200.0, FPL2.Z);
+                    epDrop = new TSG.Point((FPL0.X + p1.X) / 2, FPL1.Y, FPL1.Z);
+                    //--------------------
+                    p3 = new TSG.Point(FPL5.X + beamWidth, FPL5.Y, FPL5.Z);
+                    p4 = new TSG.Point(FPL4.X + beamWidth, FPL4.Y, FPL4.Z);
+                    RebarPolygon.Points.Add(FPL5);
+                    RebarPolygon.Points.Add(p3);
+                    RebarPolygon.Points.Add(p4);
+                    RebarPolygon.Points.Add(FPL4);
+                    RebarPolygon.Points.Add(FPL5);
+
+                    spMain = new TSG.Point((FPL5.X + p3.X) / 2, FPL5.Y - 200.0, FPL5.Z);
+                    epMain = new TSG.Point((FPL5.X + p3.X) / 2, FPL0.Y, FPL0.Z);
+                    break;
+
+                case "bot" when dropPosition == "left":
+                    dropDepth = Math.Abs(FPL2.Z - FPL1.Z);
+                    p1 = new TSG.Point(FPL0.X, FPL0.Y + beamWidth, FPL0.Z);
+                    p2 = new TSG.Point(FPL5.X, FPL5.Y + beamWidth, FPL5.Z);
+                    RebarPolygonDrop.Points.Add(FPL0);
+                    RebarPolygonDrop.Points.Add(FPL5);
+                    RebarPolygonDrop.Points.Add(p2);
+                    RebarPolygonDrop.Points.Add(p1);
+                    RebarPolygonDrop.Points.Add(FPL0);
+
+                    spDrop = new TSG.Point(FPL0.X, FPL0.Y + beamWidth / 2, FPL0.Z);
+                    epDrop = new TSG.Point(FPL1.X, FPL1.Y + beamWidth / 2, FPL1.Z);
+                    //--------------------
+                    p3 = new TSG.Point(FPL3.X, FPL3.Y + beamWidth, FPL3.Z);
+                    p4 = new TSG.Point(FPL4.X, FPL4.Y + beamWidth, FPL4.Z);
+                    RebarPolygon.Points.Add(FPL3);
+                    RebarPolygon.Points.Add(FPL4);
+                    RebarPolygon.Points.Add(p4);
+                    RebarPolygon.Points.Add(p3);
+                    RebarPolygon.Points.Add(FPL3);
+
+                    spMain = new TSG.Point(FPL3.X, FPL3.Y + beamWidth / 2, FPL3.Z);
+                    epMain = new TSG.Point(FPL2.X, FPL2.Y + beamWidth / 2, FPL3.Z);
+
+                    break;
+
+                case "bot" when dropPosition == "right":
+                    dropDepth = Math.Abs(FPL5.Z - FPL0.Z);
+                    p1 = new TSG.Point(FPL1.X, FPL1.Y + beamWidth, FPL1.Z);
+                    p2 = new TSG.Point(FPL2.X, FPL2.Y + beamWidth, FPL2.Z);
+                    RebarPolygon.Points.Add(FPL1);
+                    RebarPolygon.Points.Add(FPL2);
+                    RebarPolygon.Points.Add(p2);
+                    RebarPolygon.Points.Add(p1);
+                    RebarPolygon.Points.Add(FPL1);
+
+                    spDrop = new TSG.Point(FPL0.X, FPL0.Y + beamWidth / 2, FPL0.Z);
+                    epDrop = new TSG.Point(FPL1.X, FPL1.Y + beamWidth / 2, FPL1.Z);
+                    //--------------------
+
+                    p3 = new TSG.Point(FPL4.X, FPL4.Y + beamWidth, FPL4.Z);
+                    p4 = new TSG.Point(FPL3.X, FPL3.Y + beamWidth, FPL3.Z);
+                    RebarPolygonDrop.Points.Add(FPL4);
+                    RebarPolygonDrop.Points.Add(FPL3);
+                    RebarPolygonDrop.Points.Add(p3);
+                    RebarPolygonDrop.Points.Add(p4);
+                    RebarPolygonDrop.Points.Add(FPL4);
+
+                    spMain = new TSG.Point(FPL4.X, FPL4.Y + beamWidth / 2, FPL4.Z);
+                    epMain = new TSG.Point(FPL5.X, FPL5.Y + beamWidth / 2, FPL5.Z);
+                    break;
+
+                case "top" when dropPosition == "left":
+                    dropDepth = Math.Abs(FPL2.Z - FPL1.Z);
+
+                    p1 = new TSG.Point(FPL2.X, FPL2.Y - beamWidth, FPL2.Z);
+                    p2 = new TSG.Point(FPL3.X, FPL3.Y - beamWidth, FPL3.Z);
+                    RebarPolygonDrop.Points.Add(FPL2);
+                    RebarPolygonDrop.Points.Add(FPL3);
+                    RebarPolygonDrop.Points.Add(p2);
+                    RebarPolygonDrop.Points.Add(p1);
+                    RebarPolygonDrop.Points.Add(FPL2);
+
+                    spDrop = new TSG.Point(FPL2.X, FPL2.Y - beamWidth / 2, FPL2.Z);
+                    epDrop = new TSG.Point(FPL1.X, FPL1.Y - beamWidth / 2, FPL1.Z);
+                    //--------------------
+
+                    p3 = new TSG.Point(FPL5.X, FPL5.Y - beamWidth, FPL5.Z);
+                    p4 = new TSG.Point(FPL4.X, FPL4.Y - beamWidth, FPL4.Z);
+                    RebarPolygon.Points.Add(FPL5);
+                    RebarPolygon.Points.Add(FPL4);
+                    RebarPolygon.Points.Add(p4);
+                    RebarPolygon.Points.Add(p3);
+                    RebarPolygon.Points.Add(FPL5);
+
+                    spMain = new TSG.Point(FPL5.X, FPL5.Y - beamWidth / 2, FPL5.Z);
+                    epMain = new TSG.Point(FPL0.X, FPL0.Y - beamWidth / 2, FPL0.Z);
+                    break;
+
+                case "top" when dropPosition == "right":
+                    dropDepth = Math.Abs(FPL0.Z - FPL1.Z);
+                    p1 = new TSG.Point(FPL0.X, FPL0.Y - beamWidth, FPL0.Z);
+                    p2 = new TSG.Point(FPL5.X, FPL5.Y - beamWidth, FPL5.Z);
+                    RebarPolygonDrop.Points.Add(FPL0);
+                    RebarPolygonDrop.Points.Add(FPL5);
+                    RebarPolygonDrop.Points.Add(p2);
+                    RebarPolygonDrop.Points.Add(p1);
+                    RebarPolygonDrop.Points.Add(FPL0);
+
+                    spDrop = new TSG.Point(FPL0.X, FPL0.Y - beamWidth / 2, FPL0.Z);
+                    epDrop = new TSG.Point(FPL1.X, FPL1.Y - beamWidth / 2, FPL1.Z);
+                    //--------------------
+                    p3 = new TSG.Point(FPL3.X, FPL3.Y - beamWidth, FPL3.Z);
+                    p4 = new TSG.Point(FPL4.X, FPL4.Y - beamWidth, FPL4.Z);
+                    RebarPolygon.Points.Add(FPL3);
+                    RebarPolygon.Points.Add(FPL4);
+                    RebarPolygon.Points.Add(p4);
+                    RebarPolygon.Points.Add(p3);
+                    RebarPolygon.Points.Add(FPL3);
+
+                    spMain = new TSG.Point(FPL2.X, FPL2.Y - beamWidth / 2, FPL2.Z);
+                    epMain = new TSG.Point(FPL3.X, FPL3.Y - beamWidth / 2, FPL3.Z);
+                    break;
+            }
+
+            InsertRebarInfo(spDrop, epDrop, RebarPolygonDrop, beam, radius, rebarName, beamOriented, spacingStirrup, dropPosition);
+            InsertRebarInfo(spMain, epMain, RebarPolygon, beam, radius, rebarName, beamOriented, spacingStirrup, dropPosition);
         }
 
 #warning Links bar info
 
-        private static void BeamStirrupBarInfo(Beam beam, string beamOriented, double radiusDouble, RebarGroup rebar, ArrayList rebarSpacing)
+        private static void BeamStirrupBarInfo(Beam beam, string beamOriented, double radiusDouble, RebarGroup rebar, ArrayList spacingStirrup, string dropPosition)
         {
             rebar.RadiusValues.Add(2 * radiusDouble);
             RebarHookData customHook = new RebarHookData() { Shape = RebarHookData.RebarHookShapeEnum.CUSTOM_HOOK, Angle = 90.0, Radius = 16.0, Length = 81.0 };
@@ -566,7 +1284,7 @@ namespace RebarCreate
 
             rebar.SpacingType = RebarGroup.RebarGroupSpacingTypeEnum.SPACING_TYPE_TARGET_SPACE;
 
-            rebar.Spacings = rebarSpacing;
+            rebar.Spacings = spacingStirrup;
             rebar.StartPointOffsetType =
                 Reinforcement.RebarOffsetTypeEnum.OFFSET_TYPE_COVER_THICKNESS;
             rebar.EndPointOffsetType =
@@ -604,18 +1322,25 @@ namespace RebarCreate
             */
             onPlanOffsets = new ArrayList { 30.0 };
             rebar.OnPlaneOffsets = onPlanOffsets;
-
-            //
-            if (beamOriented == "hor")
+            if (dropPosition == null)
+            {
+                if (beamOriented == "hor")
+                {
+                    rebar.StartFromPlaneOffset = 30.0;
+                    rebar.EndFromPlaneOffset = 30.0;
+                }
+                else if (beamOriented == "ver")
+                {
+                    rebar.StartFromPlaneOffset = 200.0;
+                    rebar.EndFromPlaneOffset = 200.0;
+                };
+            }
+            else
             {
                 rebar.StartFromPlaneOffset = 30.0;
                 rebar.EndFromPlaneOffset = 30.0;
             }
-            else if (beamOriented == "ver")
-            {
-                rebar.StartFromPlaneOffset = 200.0;
-                rebar.EndFromPlaneOffset = 200.0;
-            };
+
             rebar.ExcludeType = RebarGroup.ExcludeTypeEnum.EXCLUDE_TYPE_NONE;
             rebar.Father = beam;
             rebar.Insert();
@@ -624,21 +1349,6 @@ namespace RebarCreate
         private void button1_Click(object sender, EventArgs e)
         {
             Model model = new Model();
-            Picker picker = new Picker();
-            //ModelObjectEnumerator modelObjectEnumerator = picker.PickObjects(Picker.PickObjectsEnum.PICK_N_PARTS);
-            //while (modelObjectEnumerator.MoveNext())
-            //{
-            //    if (modelObjectEnumerator != null)
-            //    {
-            //        Beam beam = modelObjectEnumerator.Current as Beam;
-            //        TSG.Point sp = beam.GetCenterLine(true)[0] as TSG.Point;
-            //        TSG.Point ep = beam.GetCenterLine(true)[1] as TSG.Point;
-            //        ControlPoint controlPoint1 = new ControlPoint(sp);
-            //        ControlPoint controlPoint2 = new ControlPoint(ep);
-            //        controlPoint1.Insert();
-            //        controlPoint2.Insert();
-            //    }
-            //}
             Picker Picker = new Picker();
             try
             {
@@ -669,49 +1379,47 @@ namespace RebarCreate
             model.CommitChanges();
         }
 
-        private void crank_btn_Click(object sender, EventArgs e)
+        private void rmPoints_btn_Click(object sender, EventArgs e)
         {
             Model model = new Model();
-            Picker picker = new Picker();
-            ModelObject myBeam = picker.PickObject(Picker.PickObjectEnum.PICK_ONE_PART);
-            List<TSG.Point> myPointsList = new List<TSG.Point>();
-            Beam beam = myBeam as Beam;
-            if (beam != null)
+            TSM.ModelObjectSelector selector = model.GetModelObjectSelector();
+            var controlPoints = selector.GetAllObjectsWithType(ModelObject.ModelObjectEnum.CONTROL_POINT);
+            while (controlPoints.MoveNext())
             {
-                Solid solid = beam.GetSolid();
-                FaceEnumerator faceEnum = solid.GetFaceEnumerator();
-                while (faceEnum.MoveNext())
-                {
-                    Face myFace = faceEnum.Current as Face;
-                    if (myFace != null)
-                    {
-                        if (myFace.Normal == new Vector(1.0, 0.0, 0.0))
-                        {
-                            Console.WriteLine("true");
-                            LoopEnumerator myLoopEnum = myFace.GetLoopEnumerator();
-                            while (myLoopEnum.MoveNext())
-                            {
-                                Loop myLoop = myLoopEnum.Current as Loop;
-                                if (myLoop != null)
-                                {
-                                    VertexEnumerator myVertexEnum = myLoop.GetVertexEnumerator();
-                                    while (myVertexEnum.MoveNext())
-                                    {
-                                        TSG.Point myVertex = myVertexEnum.Current as TSG.Point;
-                                        myPointsList.Add(myVertex);
-                                        ControlPoint controlPoint = new ControlPoint(myVertex);
-                                        controlPoint.Insert();
-                                        Console.WriteLine("myVertex: " + myVertex.ToString());
-                                        Console.WriteLine("-------------------------------");
-                                        model.CommitChanges();
-                                        Thread.Sleep(500);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                controlPoints.Current.Delete();
             }
+
+            var allRebar = selector.GetAllObjectsWithType(ModelObject.ModelObjectEnum.REBARGROUP);
+            while (allRebar.MoveNext())
+            {
+                allRebar.Current.Delete();
+            }
+            model.CommitChanges();
+        }
+
+        private void btn_Quit_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+        }
+
+        private void pictureBox1_Click_1(object sender, EventArgs e)
+        {
+        }
+
+        private void comboBox5_SelectedIndexChanged(object sender, EventArgs e)
+        {
         }
     }
 }
